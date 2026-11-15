@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#111d33">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}body{margin:0}</style>
+</head>
+<body>
+<title>Chartschule</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Chartschule">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: floating sidebar "cockpit" + one scrolling stage; trading-desk navy with candle-flame amber */
+:root{
+  --bg:#e9edf3; --surface:#ffffff; --surface-2:#f4f6fa; --ink:#111d33; --muted:#5a6a82; --line:#d5dce7;
+  --accent:#e8930c; --accent-soft:#fdf0d8; --accent-ink:#3a2300;
+  --up:#0e9a74; --up-soft:#dcf4ec; --down:#de4249; --down-soft:#fbe3e4; --info:#3567d6;
+  --shadow:0 1px 2px rgba(17,29,51,.06),0 8px 24px rgba(17,29,51,.06);
+  --hero:#111d33; --hero-fg:#f3f6fb; --hero-muted:#b7c3d6;
+  --f-display:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b1322; --surface:#121d31; --surface-2:#18253d; --ink:#e7ecf4; --muted:#8c9cb5; --line:#22314c;
+  --accent:#ffb43a; --accent-soft:#33270f; --accent-ink:#1d1300;
+  --up:#2cc497; --up-soft:#113428; --down:#ff6168; --down-soft:#3a1b20; --info:#7aa2ff;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.25); --hero:#17243c; --hero-fg:#f3f6fb; --hero-muted:#a3b1c7; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1322; --surface:#121d31; --surface-2:#18253d; --ink:#e7ecf4; --muted:#8c9cb5; --line:#22314c;
+  --accent:#ffb43a; --accent-soft:#33270f; --accent-ink:#1d1300;
+  --up:#2cc497; --up-soft:#113428; --down:#ff6168; --down-soft:#3a1b20; --info:#7aa2ff;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.25); --hero:#17243c; --hero-fg:#f3f6fb; --hero-muted:#a3b1c7; color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-tap-highlight-color:transparent;overflow:hidden}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-display);line-height:1.1;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(28px,3.4vw,42px);font-weight:800}
+h2{font-size:24px;font-weight:700}
+h3{font-size:18px;font-weight:700}
+p{margin:0}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+kbd{font-family:var(--f-mono);font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid var(--line);border-bottom-width:2px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;height:100%;padding-block:16px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.side{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:18px;padding:20px 14px;min-height:0;overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px}
+.brand b{font-family:var(--f-display);font-size:21px;font-weight:800;letter-spacing:-.02em}
+.stats{background:var(--surface-2);border-radius:var(--r);padding:12px;display:grid;gap:8px}
+.lvl{display:flex;justify-content:space-between;align-items:baseline;font-size:13px}
+.lvl b{font-family:var(--f-display);font-size:15px}
+.bar{height:8px;border-radius:9px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:9px;transition:width .5s}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line)}
+.chip.up{background:var(--up-soft);color:var(--up);border-color:transparent}
+.chip.down{background:var(--down-soft);color:var(--down);border-color:transparent}
+.chip.acc{background:var(--accent-soft);color:var(--ink);border-color:transparent}
+nav{display:grid;gap:4px}
+.nav{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;border:0;background:none;cursor:pointer;font-weight:600;text-align:left;min-height:48px}
+.nav svg{width:22px;height:22px;flex:none}
+.nav span{flex:1}
+.nav:hover{background:var(--surface-2)}
+.nav.on{background:var(--ink);color:var(--surface)}
+.nav.on kbd{background:transparent;color:inherit;border-color:currentColor;opacity:.6}
+.side-foot{margin-top:auto;font-size:12px;color:var(--muted);padding:0 6px;display:grid;gap:8px}
+.linkbtn{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12px;text-align:left}
+
+main{min-height:0;overflow-y:auto;overflow-x:hidden;border-radius:20px;-webkit-overflow-scrolling:touch}
+.stage{max-width:1180px;margin:0 auto;display:grid;gap:22px;padding:8px 4px 40px}
+.card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:22px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 20px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:700;cursor:pointer;transition:transform .08s,background .15s}
+.btn:active{transform:scale(.97)}
+.btn:hover{background:var(--surface-2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.pri:hover{filter:brightness(1.05);background:var(--accent)}
+.btn.ink{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn.up{background:var(--up);border-color:var(--up);color:#fff}
+.btn.down{background:var(--down);border-color:var(--down);color:#fff}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.btn kbd{background:rgba(255,255,255,.25);border-color:rgba(0,0,0,.15);color:inherit}
+.btn.big{min-height:58px;font-size:18px;padding:0 26px}
+
+/* Home */
+.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:center;background:var(--hero);color:var(--hero-fg);border-radius:24px;padding:30px;position:relative;overflow:hidden}
+.hero .eyebrow{color:var(--accent)}
+.hero p{color:var(--hero-muted);max-width:46ch}
+.hero canvas{width:100%;height:170px;display:block}
+.segs{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-top:4px}
+.segs i{height:8px;border-radius:4px;background:var(--hero-muted);opacity:.3}
+.segs i.done{opacity:1}
+.segs i.done{background:var(--accent)}
+.quest{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.quest:last-child{border-bottom:0}
+.tick{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none}
+.tick.ok{background:var(--up);border-color:var(--up);color:#fff}
+.game{display:flex;flex-direction:column;gap:12px;cursor:pointer;border:0;text-align:left;transition:transform .12s}
+.game:hover{transform:translateY(-2px)}
+.game .ico{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.game .ico svg{width:26px;height:26px}
+.game .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
+.tip{border-left:0;background:var(--accent-soft);color:var(--ink)}
+.disclaimer{font-size:12px;color:var(--muted);text-align:center}
+
+/* Path */
+.mods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.mod{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.mod .no{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-family:var(--f-display);font-size:24px;font-weight:800;background:var(--surface-2);border:2px solid var(--line)}
+.mod.done .no{background:var(--up);border-color:var(--up);color:#fff}
+.mod.open .no{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.mod.locked{opacity:.55}
+.mod .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.mod .btn{min-height:44px;padding:0 14px;font-size:15px}
+
+/* Player */
+.player{max-width:820px;margin:0 auto;width:100%}
+.ptop{display:flex;align-items:center;gap:14px}
+.ptop .bar{flex:1;height:10px}
+.lesson{display:grid;gap:16px;font-size:18px;line-height:1.6}
+.lesson ul{margin:0;padding-left:22px;display:grid;gap:6px}
+.lesson b{color:var(--ink)}
+.fig{background:var(--surface-2);border-radius:var(--r);padding:14px;display:flex;justify-content:center;overflow-x:auto}
+.fig svg{max-width:100%;height:auto}
+.formula{font-family:var(--f-mono);font-size:16px;background:var(--accent-soft);border-radius:12px;padding:12px 16px}
+.warn{background:var(--down-soft);border-radius:12px;padding:12px 16px;font-size:16px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;text-align:left;padding:14px 16px;min-height:58px;border-radius:14px;border:2px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;font-size:17px}
+.opt:hover{border-color:var(--muted)}
+.opt kbd{font-size:13px}
+.opt.right{border-color:var(--up);background:var(--up-soft)}
+.opt.wrong{border-color:var(--down);background:var(--down-soft)}
+.opt[disabled]{cursor:default}
+.why{border-radius:12px;padding:12px 16px;font-size:16px;background:var(--surface-2)}
+.navrow{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.score-big{font-family:var(--f-display);font-size:64px;font-weight:800;line-height:1}
+
+/* Games */
+.gtop{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.gtop .bar{flex:1;min-width:120px;height:12px}
+.gstat{display:flex;flex-direction:column;align-items:flex-end}
+.gstat b{font-family:var(--f-mono);font-size:24px}
+.gstat small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.pfig{background:var(--surface-2);border-radius:16px;padding:12px;display:flex;justify-content:center}
+.pfig svg{width:100%;max-width:560px;height:auto}
+.opts.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.combo{font-family:var(--f-display);font-weight:800;color:var(--accent)}
+.qtext{font-size:20px;font-weight:600;line-height:1.45}
+.flash-ok{animation:fok .35s}
+.flash-no{animation:fno .35s}
+@keyframes fok{0%{box-shadow:0 0 0 0 var(--up)}100%{box-shadow:0 0 0 14px transparent}}
+@keyframes fno{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* Simulator */
+.sim{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;height:calc(100% - 4px);min-height:560px}
+.sim-chart{display:flex;flex-direction:column;gap:10px;min-height:0;padding:16px}
+.sim-chart .cwrap{flex:1;min-height:320px;position:relative}
+.sim-chart canvas{position:absolute;inset:0;width:100%;height:100%}
+.sim-side{display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto;padding:18px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-weight:700}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface-2);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:8px 0;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px}
+.seg button.on{background:var(--surface);box-shadow:var(--shadow)}
+.tbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tbtns .btn{min-height:52px;padding:0 10px;font-size:15px}
+.coach{background:var(--surface-2);border-radius:12px;padding:12px;font-size:14px;display:grid;gap:8px}
+.tlist{font-size:13px;display:grid;gap:4px}
+.tlist div{display:flex;justify-content:space-between;font-family:var(--f-mono)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.pos{border-radius:12px;padding:12px;border:2px solid var(--line)}
+.pos.long{border-color:var(--up)}
+.pos.short{border-color:var(--down)}
+
+/* Profile */
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.badge{border-radius:14px;padding:14px;background:var(--surface-2);display:grid;gap:4px;opacity:.45}
+.badge.got{opacity:1;background:var(--accent-soft)}
+.badge b{font-family:var(--f-display)}
+.badge small{font-size:13px;color:var(--muted)}
+.bigstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.bigstats div{background:var(--surface-2);border-radius:14px;padding:14px}
+.bigstats b{display:block;font-family:var(--f-mono);font-size:26px}
+
+/* Overlays */
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));display:grid;justify-items:center;gap:8px;z-index:50;pointer-events:none;width:min(520px,calc(100% - 32px))}
+@media (max-width:860px){.toasts{bottom:calc(96px + env(safe-area-inset-bottom,0px))}}
+.toast{background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-weight:700;box-shadow:var(--shadow);animation:tin .25s ease-out}
+.toast.xp{background:var(--accent);color:var(--accent-ink)}
+@keyframes tin{from{transform:translateY(8px);opacity:0}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:60;width:100%;height:100%}
+.modal{position:fixed;inset:0;background:rgba(5,10,20,.5);display:grid;place-items:center;z-index:40;padding:20px}
+.modal .card{max-width:640px;width:100%;max-height:85vh;overflow:auto}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:15px;align-items:center}
+
+@media (max-width:1100px){.sim{grid-template-columns:minmax(0,1fr) 290px}}
+@media (max-width:980px){.grid3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:1fr}.hero canvas{height:120px}}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px}
+  .side{order:2;flex-direction:row;padding:6px;border-radius:16px;overflow:visible}
+  .side .brand,.side .stats,.side-foot{display:none}
+  nav{grid-template-columns:repeat(5,1fr);width:100%}
+  .nav{flex-direction:column;gap:2px;font-size:11px;padding:6px 2px;text-align:center}
+  .nav kbd{display:none}
+  .mods,.grid2{grid-template-columns:1fr}
+  .sim{grid-template-columns:1fr;height:auto}
+  .sim-chart .cwrap{min-height:340px}
+  .bigstats{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:560px){.grid3,.opts.g2{grid-template-columns:1fr}.card{padding:16px}.hero{padding:20px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app">
+  <aside class="side" aria-label="Navigation">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="4" y="11" width="6" height="12" rx="1.5" fill="var(--down)"/><line x1="7" y1="6" x2="7" y2="27" stroke="var(--down)" stroke-width="2"/><rect x="18" y="7" width="6" height="14" rx="1.5" fill="var(--up)"/><line x1="21" y1="3" x2="21" y2="25" stroke="var(--up)" stroke-width="2"/><circle cx="21" cy="3" r="2.6" fill="var(--accent)"/></svg>
+      <b>Chartschule</b>
+    </div>
+    <div class="stats" id="stats"></div>
+    <nav id="nav"></nav>
+    <div class="side-foot">
+      <span>Drücke <kbd>?</kbd> für alle Tastenkürzel</span>
+      <span>Lern-App, keine Anlageberatung. Alle Kurse sind simuliert.</span>
+    </div>
+  </aside>
+  <main id="main" tabindex="-1"></main>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<canvas id="confetti" hidden></canvas>
+<div id="modal"></div>
+
+<script>
+"use strict";
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const main = $('#main');
+const de = (n, d = 0) => Number(n).toLocaleString('de-DE', {minimumFractionDigits: d, maximumFractionDigits: d});
+const eur = (n, d = 0) => (n < 0 ? '−' : '') + de(Math.abs(n), d) + ' €';
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function rng(seed){ let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(r){ let u = 0, v = 0; while(!u) u = r(); while(!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function shuffle(a, r = Math.random){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const pick = (a, r = Math.random) => a[Math.floor(r() * a.length)];
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const dayStr = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+/* ---------- Saved progress (this browser only) ---------- */
+const KEY = 'chartschule.v1';
+const DEF = {xp: 0, streak: 0, lastDay: null, mods: {}, blitzBest: 0, riskBest: 0, simDays: 0, simBestDisc: 0, simTotalR: 0, badges: {}, sound: true, quests: {date: null, done: {}}};
+function load(){ try { return Object.assign(JSON.parse(JSON.stringify(DEF)), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch(e){ return JSON.parse(JSON.stringify(DEF)); } }
+let S = load();
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+/* ---------- Levels, XP, streak, quests, badges ---------- */
+const LV = [0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200, 4000];
+const TITLES = ['Neuling', 'Chart-Gucker', 'Kerzenleser', 'Trendfolger', 'Risiko-Manager', 'Setup-Jäger', 'Tape-Reader', 'Disziplin-Profi', 'Markt-Stratege', 'Trading-Meister', 'Legende'];
+function levelOf(xp){ let l = 0; while(l < LV.length - 1 && xp >= LV[l + 1]) l++; return l; }
+function addXP(n, why){
+  const before = levelOf(S.xp);
+  S.xp += n;
+  const t = dayStr(), y = dayStr(new Date(Date.now() - 864e5));
+  if(S.lastDay !== t){ S.streak = S.lastDay === y ? S.streak + 1 : 1; S.lastDay = t; if(S.streak >= 3) award('streak3'); if(S.streak >= 7) award('streak7'); }
+  toast('+' + n + ' XP · ' + why, 'xp');
+  const after = levelOf(S.xp);
+  if(after > before){ setTimeout(() => { toast('Level ' + (after + 1) + ': ' + TITLES[after] + '!'); confetti(); sfx('level'); }, 400); }
+  save(); renderStats();
+}
+const QUESTS = [
+  {id: 'learn', t: 'Schließe eine Lektion oder ein Quiz ab'},
+  {id: 'blitz', t: 'Schaffe 8 Punkte im Muster-Blitz'},
+  {id: 'sim', t: 'Beende einen Sim-Tag mit Disziplin ab 80'}
+];
+function ensureQuests(){ if(S.quests.date !== dayStr()){ S.quests = {date: dayStr(), done: {}}; save(); } }
+function quest(id){ ensureQuests(); if(S.quests.done[id]) return; S.quests.done[id] = true; save(); setTimeout(() => addXP(25, 'Tagesquest'), 700); if(QUESTS.every(q => S.quests.done[q.id])) award('allquests'); }
+const BADGES = [
+  {id: 'first', n: 'Erste Kerze', d: 'Erstes Modul abgeschlossen'},
+  {id: 'perfect', n: 'Fehlerfrei', d: 'Ein Quiz mit 5/5 bestanden'},
+  {id: 'half', n: 'Halbzeit', d: '4 Module abgeschlossen'},
+  {id: 'grad', n: 'Absolvent', d: 'Alle 8 Module abgeschlossen'},
+  {id: 'blitz10', n: 'Musterauge', d: '10+ Punkte im Muster-Blitz'},
+  {id: 'blitz20', n: 'Adlerauge', d: '20+ Punkte im Muster-Blitz'},
+  {id: 'risk10', n: 'Rechenkünstler', d: '10+ Punkte im Risiko-Sprint'},
+  {id: 'sim1', n: 'Erster Handelstag', d: 'Einen Sim-Tag beendet'},
+  {id: 'disc100', n: 'Eiserne Disziplin', d: 'Sim-Tag mit Disziplin 100 und mindestens einem Trade'},
+  {id: 'green5', n: 'Grüne Woche', d: '5 Sim-Tage beendet'},
+  {id: 'streak3', n: 'Dranbleiber', d: '3 Tage in Folge gelernt'},
+  {id: 'streak7', n: 'Gewohnheit', d: '7 Tage in Folge gelernt'},
+  {id: 'allquests', n: 'Quest-Komplett', d: 'Alle Tagesquests an einem Tag'}
+];
+function award(id){ if(S.badges[id]) return; S.badges[id] = dayStr(); save(); const b = BADGES.find(x => x.id === id); if(b) setTimeout(() => { toast('Abzeichen: ' + b.n); sfx('level'); }, 900); }
+
+/* ---------- Feedback: toast, sound, confetti ---------- */
+function toast(msg, cls = ''){ const el = document.createElement('div'); el.className = 'toast ' + cls; el.textContent = msg; const box = $('#toasts'); box.appendChild(el); while(box.children.length > 3) box.firstChild.remove(); setTimeout(() => el.remove(), 2600); }
+let AC = null;
+function sfx(kind){
+  if(!S.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const seq = {ok: [[660, .07], [880, .09]], no: [[220, .16]], level: [[523, .08], [659, .08], [784, .08], [1047, .16]], tick: [[1200, .02]], win: [[784, .07], [988, .12]], loss: [[300, .1], [240, .14]]}[kind] || [[440, .05]];
+    let t = AC.currentTime;
+    seq.forEach(([f, d]) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = kind === 'no' || kind === 'loss' ? 'sawtooth' : 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(.08, t); g.gain.exponentialRampToValueAtTime(.001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); t += d * .9; });
+  } catch(e){}
+}
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = $('#confetti'), x = c.getContext('2d'); c.hidden = false;
+  const W = c.width = innerWidth * devicePixelRatio, H = c.height = innerHeight * devicePixelRatio;
+  const cols = [css('--accent'), css('--up'), css('--down'), css('--info')];
+  const P = Array.from({length: 140}, () => ({x: W / 2 + (Math.random() - .5) * W * .3, y: H * .35, vx: (Math.random() - .5) * 26, vy: -Math.random() * 26 - 6, s: (Math.random() * 8 + 5) * devicePixelRatio, c: pick(cols), r: Math.random() * 6}));
+  let f = 0;
+  (function loop(){ x.clearRect(0, 0, W, H); P.forEach(p => { p.vy += .9; p.x += p.vx; p.y += p.vy; p.r += .2; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); x.restore(); }); if(++f < 90) requestAnimationFrame(loop); else c.hidden = true; })();
+}
+
+/* ---------- Candle drawings (SVG, theme-aware) ---------- */
+function candleSVG(cs, o = {}){
+  const w = o.w || 360, h = o.h || 190, pad = 16;
+  let vals = cs.flatMap(c => [c[1], c[2]]);
+  (o.lines || []).forEach(l => vals.push(l.v));
+  (o.over || []).forEach(l => vals.push(...l.pts.filter(v => v != null)));
+  const lo = Math.min(...vals), hi = Math.max(...vals), rgt = o.lines && o.lines.some(l => l.t) ? 74 : 0;
+  const n = cs.length, step = (w - pad * 2 - rgt) / n, bw = Math.max(3, Math.min(22, step * .62));
+  const y = v => pad + (hi - v) / ((hi - lo) || 1) * (h - pad * 2);
+  const X = i => pad + step * i + step / 2;
+  let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${o.label || 'Kerzenchart'}">`;
+  (o.hl || []).forEach(i => { s += `<rect x="${X(i) - step / 2 + 1}" y="4" width="${step - 2}" height="${h - 8}" rx="6" fill="var(--accent)" opacity=".16"/>`; });
+  (o.box || []).forEach(b => { s += `<rect x="${X(b.a) - step / 2}" y="${y(b.hi)}" width="${step * (b.b - b.a + 1)}" height="${y(b.lo) - y(b.hi)}" fill="var(--info)" opacity=".1"/>`; });
+  (o.lines || []).forEach(l => { s += `<line x1="${pad}" x2="${w - pad - rgt + (rgt ? 6 : 0)}" y1="${y(l.v)}" y2="${y(l.v)}" stroke="var(${l.c || '--muted'})" stroke-width="1.6" stroke-dasharray="${l.solid ? '' : '5 4'}"/>`; if(l.t) s += `<text x="${w - rgt + 2}" y="${y(l.v) + 4}" font-size="12" font-weight="700" fill="var(${l.c || '--muted'})" font-family="Figtree,sans-serif">${l.t}</text>`; });
+  cs.forEach((c, i) => { const up = c[3] >= c[0], col = up ? 'var(--up)' : 'var(--down)', top = y(Math.max(c[0], c[3])), bh = Math.max(1.5, Math.abs(y(c[0]) - y(c[3]))); s += `<line x1="${X(i)}" x2="${X(i)}" y1="${y(c[1])}" y2="${y(c[2])}" stroke="${col}" stroke-width="1.6"/><rect x="${X(i) - bw / 2}" y="${top}" width="${bw}" height="${bh}" rx="1.5" fill="${col}"/>`; });
+  (o.over || []).forEach(l => { const pts = l.pts.map((v, i) => v == null ? null : X(i) + ',' + y(v)).filter(Boolean).join(' '); s += `<polyline points="${pts}" fill="none" stroke="var(${l.c})" stroke-width="2.4" stroke-linejoin="round"/>`; });
+  (o.marks || []).forEach(m => { const yy = y(m.v); s += `<path d="M${X(m.i)} ${yy + (m.up ? 8 : -8)} l-6 ${m.up ? 10 : -10} h12z" fill="var(--accent)"/>`; });
+  return s + '</svg>';
+}
+function series(closes, seed = 7, wick = .35){ const r = rng(seed); return closes.map((c, i) => { const o = i ? closes[i - 1] + (r() - .5) * .15 : c - .3; return [o, Math.max(o, c) + r() * wick, Math.min(o, c) - r() * wick, c]; }); }
+function zz(pts, per, seed = 3, noise = .25){ const r = rng(seed), out = []; for(let i = 0; i < pts.length - 1; i++) for(let k = 0; k < per; k++) out.push(pts[i] + (pts[i + 1] - pts[i]) * (k / per) + (r() - .5) * noise); out.push(pts[pts.length - 1]); return out; }
+function emaArr(cs, n){ const a = 2 / (n + 1); let e = cs[0][3]; return cs.map((c, i) => (e = i ? c[3] * a + e * (1 - a) : c[3])); }
+
+/* Pattern generator (shared by lessons and the Muster-Blitz) */
+const PATTERNS = {
+  hammer: {n: 'Hammer', d: 'Kleiner Körper oben, langer unterer Docht nach einem Abwärtstrend: Verkäufer wurden zurückgedrängt.'},
+  star: {n: 'Shooting Star', d: 'Kleiner Körper unten, langer oberer Docht nach einem Anstieg: Käufer wurden abgewiesen.'},
+  doji: {n: 'Doji', d: 'Open und Close fast gleich: Käufer und Verkäufer sind unentschlossen.'},
+  bullE: {n: 'Bullish Engulfing', d: 'Grüne Kerze, deren Körper den roten Körper davor komplett umschließt.'},
+  bearE: {n: 'Bearish Engulfing', d: 'Rote Kerze, deren Körper den grünen Körper davor komplett umschließt.'},
+  inside: {n: 'Inside Bar', d: 'Hoch und Tief liegen komplett innerhalb der Vorkerze: Der Markt sammelt sich.'},
+  maru: {n: 'Marubozu', d: 'Großer Körper fast ohne Dochte: Eine Seite hatte die volle Kontrolle.'}
+};
+function genPattern(type, r){
+  const dir = {hammer: -1, bullE: -1, star: 1, bearE: 1}[type] || (r() < .5 ? 1 : -1);
+  let p = 100; const cs = [];
+  const pre = 7 + Math.floor(r() * 3);
+  for(let i = 0; i < pre; i++){ const o = p, c = o + dir * (.5 + r() * .9) + (r() - .5) * 1.1; cs.push([o, Math.max(o, c) + r() * .5, Math.min(o, c) - r() * .5, c]); p = c; }
+  let hl = 1;
+  if(type === 'hammer'){ const o = p - .2, c = o + .45; cs.push([o, c + .08, o - 2.2 - r() * .6, c]); }
+  else if(type === 'star'){ const o = p + .2, c = o - .45; cs.push([o, o + 2.2 + r() * .6, c - .08, c]); }
+  else if(type === 'doji'){ const o = p + (r() - .5) * .3; cs.push([o, o + .9 + r() * .5, o - .9 - r() * .5, o + .03]); }
+  else if(type === 'bullE' || type === 'bearE'){ const s = type === 'bullE' ? 1 : -1; const o1 = p, c1 = p - s * (.7 + r() * .3); cs.push([o1, Math.max(o1, c1) + .15, Math.min(o1, c1) - .15, c1]); const o2 = c1 - s * .15, c2 = o1 + s * (.5 + r() * .5); cs.push([o2, Math.max(o2, c2) + .12, Math.min(o2, c2) - .12, c2]); hl = 2; }
+  else if(type === 'inside'){ const o1 = p, c1 = p + dir * (2.2 + r() * .6); const h1 = Math.max(o1, c1) + .3, l1 = Math.min(o1, c1) - .3; cs.push([o1, h1, l1, c1]); const m = (o1 + c1) / 2, o2 = m + .3 * dir, c2 = m - .3 * dir; cs.push([o2, Math.max(o2, c2) + .35, Math.min(o2, c2) - .35, c2]); hl = 2; }
+  else if(type === 'maru'){ const o = p, c = p + dir * (2.4 + r() * .8); cs.push([o, Math.max(o, c) + .02, Math.min(o, c) - .02, c]); }
+  const n = cs.length; return {cs, hl: hl === 2 ? [n - 2, n - 1] : [n - 1]};
+}
+function patFig(type, seed = 11, w = 360, h = 190){ const g = genPattern(type, rng(seed)); return candleSVG(g.cs, {hl: g.hl, w, h, label: PATTERNS[type].n}); }
+
+const FIG = {
+  anatomy: () => `<svg viewBox="0 0 420 220" width="420" height="220" role="img" aria-label="Aufbau einer Kerze">
+    <g font-family="Figtree,sans-serif" font-size="14" font-weight="600" fill="var(--ink)">
+    <line x1="110" y1="20" x2="110" y2="200" stroke="var(--up)" stroke-width="3"/><rect x="85" y="60" width="50" height="100" rx="3" fill="var(--up)"/>
+    <line x1="300" y1="20" x2="300" y2="200" stroke="var(--down)" stroke-width="3"/><rect x="275" y="60" width="50" height="100" rx="3" fill="var(--down)"/>
+    <text x="145" y="25">High</text><text x="145" y="65">Close</text><text x="145" y="160">Open</text><text x="145" y="204">Low</text>
+    <text x="335" y="25">High</text><text x="335" y="65">Open</text><text x="335" y="160">Close</text><text x="335" y="204">Low</text>
+    <text x="16" y="44" fill="var(--muted)">Docht</text><text x="16" y="114" fill="var(--muted)">Körper</text>
+    <text x="70" y="218" fill="var(--up)">steigend</text><text x="262" y="218" fill="var(--down)">fallend</text></g></svg>`,
+  book: () => `<table class="num" style="border-collapse:collapse;font-size:16px;min-width:280px"><thead><tr><th style="text-align:left;padding:4px 14px;color:var(--muted)">Bid (Käufer)</th><th style="text-align:right;padding:4px 14px;color:var(--muted)">Ask (Verkäufer)</th></tr></thead><tbody>
+    <tr><td style="padding:4px 14px;color:var(--up)">500 @ 99,98</td><td style="text-align:right;padding:4px 14px;color:var(--down)">300 @ 100,04</td></tr>
+    <tr><td style="padding:4px 14px;color:var(--up);font-weight:700;background:var(--up-soft)">800 @ 100,00</td><td style="text-align:right;padding:4px 14px;color:var(--down);font-weight:700;background:var(--down-soft)">400 @ 100,02</td></tr>
+    <tr><td colspan="2" style="padding:8px 14px;text-align:center">Spread = 100,02 − 100,00 = <b>0,02</b></td></tr></tbody></table>`,
+  longshort: () => candleSVG(series(zz([10, 13, 12, 16], 4, 2), 5), {w: 260, h: 150, label: 'Long'}) + candleSVG(series(zz([16, 13, 14, 10], 4, 4), 9), {w: 260, h: 150, label: 'Short'}),
+  wicks: () => candleSVG([[10, 13.1, 9.9, 13], [12, 15.5, 11.8, 12.3], [12.3, 12.6, 9, 12.4], [12.4, 12.5, 12.3, 12.45]], {w: 300, h: 180}),
+  trendUp: () => candleSVG(series(zz([10, 14, 12, 17, 15, 20], 4, 8), 4), {w: 420, h: 190, marks: [{i: 4, v: 14.6, up: false}, {i: 12, v: 16.9, up: false}, {i: 20, v: 20.3, up: false}]}),
+  trendDown: () => candleSVG(series(zz([20, 16, 18, 13, 15, 10], 4, 12), 8), {w: 420, h: 190}),
+  range: () => candleSVG(series(zz([12, 15, 12, 15, 12.2, 14.9, 12.3], 3, 6, .3), 2), {w: 420, h: 190, lines: [{v: 15.3, t: 'Widerstand', c: '--down'}, {v: 11.8, t: 'Support', c: '--up'}]}),
+  breakout: () => candleSVG(series([12, 13, 14, 13, 12.5, 13.5, 14.5, 13.8, 13, 14, 14.6, 15.8, 16.6, 17.2], 21), {w: 420, h: 190, lines: [{v: 14.9, t: 'Widerstand', c: '--down'}], hl: [11]}),
+  fakeout: () => candleSVG(series([12, 13, 14.2, 13, 12.6, 13.6, 14.4, 13.8, 13.4, 14.3, 15.4, 14.2, 13.1, 12.4], 22), {w: 420, h: 190, lines: [{v: 14.8, t: 'Widerstand', c: '--down'}], hl: [10, 11]}),
+  vwap: () => { const cs = series(zz([20, 22, 21, 24, 23.5, 25], 4, 31), 17); let pv = 0, v = 0; const vw = cs.map((c, i) => { const vol = 1 + (i % 3); pv += (c[1] + c[2] + c[3]) / 3 * vol; v += vol; return pv / v; }); return candleSVG(cs, {w: 420, h: 190, over: [{pts: vw, c: '--accent'}]}); },
+  ema: () => { const cs = series(zz([10, 13, 12, 15, 14, 17], 4, 41), 13); return candleSVG(cs, {w: 420, h: 190, over: [{pts: emaArr(cs, 9), c: '--info'}]}); },
+  rr: () => candleSVG(series([20, 20.4, 20.1, 20.6, 20.3, 20.8, 21.4, 21.1, 21.8, 22.3], 6, .2), {w: 420, h: 200, lines: [{v: 22.4, t: 'Ziel +2R', c: '--up'}, {v: 20.6, t: 'Entry', c: '--ink', solid: true}, {v: 19.7, t: 'Stop −1R', c: '--down'}]}),
+  orb: () => { const c = series([30, 31.2, 30.4, 31, 30.6, 30.9, 31.3, 31.8, 32.4, 32.1, 32.9, 33.4], 51, .4); return candleSVG(c, {w: 420, h: 190, box: [{a: 0, b: 5, hi: 31.6, lo: 29.8}], lines: [{v: 31.6, t: 'OR-Hoch', c: '--up'}, {v: 29.8, t: 'OR-Tief', c: '--down'}], hl: [7]}); },
+  reclaim: () => { const cs = series([20, 19.6, 19.2, 18.8, 18.5, 18.9, 19.4, 19.9, 20.3, 20.1, 20.6, 21], 61, .25); return candleSVG(cs, {w: 420, h: 190, lines: [{v: 19.6, t: 'VWAP', c: '--accent', solid: true}], hl: [6, 7]}); },
+  flag: () => candleSVG(series([10, 10.8, 11.9, 13.2, 14.4, 14.1, 13.9, 13.7, 13.6, 14.6, 15.6, 16.4], 71, .25), {w: 420, h: 190, hl: [9], lines: [{v: 14.5, t: 'Flaggen-Hoch', c: '--muted'}]}),
+  pullback: () => { const cs = series([10, 10.6, 11.3, 12, 12.6, 12.2, 11.9, 12.1, 12.8, 13.5, 14.1, 13.7, 13.6, 14.3, 15], 81, .25); return candleSVG(cs, {w: 420, h: 190, over: [{pts: emaArr(cs, 9), c: '--info'}], hl: [6, 12]}); }
+};
+
+/* ---------- Curriculum ---------- */
+const MODS = [
+ {id: 'm1', t: 'Grundlagen', sub: 'Märkte, Spread, Ordertypen, Long & Short', cards: [
+  {h: 'Was ist Day Trading?', b: `<p>Beim Day Trading öffnest und schließt du Positionen <b>am selben Handelstag</b>. Über Nacht hältst du nichts. Du versuchst, kleine, wiederholbare Kursbewegungen auszunutzen.</p><div class="warn">Die Wahrheit vorweg: In einer großen Studie aus Brasilien verloren <b>97 %</b> der Daytrader, die über 300 Tage dabeiblieben, Geld. Deshalb lernst du hier nicht nur Muster, sondern vor allem <b>Risiko und Disziplin</b>.</div>`},
+  {h: 'Was wird gehandelt?', b: `<ul><li><b>Aktien</b>: Anteile an Firmen, z. B. Apple oder SAP.</li><li><b>Futures</b>: Terminkontrakte auf Indizes wie DAX oder S&amp;P 500.</li><li><b>Forex</b>: Währungspaare wie EUR/USD.</li><li><b>CFDs &amp; Hebelprodukte</b>: mit Hebel. Gewinne <i>und</i> Verluste werden vervielfacht.</li></ul><p>Fürs Day Trading zählen zwei Dinge: <b>Liquidität</b> (viele Käufer und Verkäufer) und <b>Volatilität</b> (der Kurs bewegt sich genug).</p>`},
+  {h: 'Bid, Ask und Spread', fig: 'book', b: `<p>Der <b>Bid</b> ist der höchste Preis, den ein Käufer gerade bietet. Der <b>Ask</b> ist der niedrigste Preis, zu dem jemand verkauft. Die Differenz heißt <b>Spread</b>.</p><p>Kaufst du sofort, zahlst du den Ask. Verkaufst du sofort, bekommst du den Bid. Der Spread ist also bei jedem Trade deine erste Gebühr.</p>`},
+  {h: 'Die drei wichtigsten Ordertypen', b: `<ul><li><b>Market-Order</b>: sofort ausführen, zum nächsten verfügbaren Preis. Schnell, aber mit Risiko auf <i>Slippage</i> (schlechterer Preis als gedacht).</li><li><b>Limit-Order</b>: nur zu deinem Preis oder besser. Du bestimmst den Preis, aber sie wird vielleicht nie ausgeführt.</li><li><b>Stop-Order</b>: schlummert, bis ein Preis erreicht wird, und wird dann zur Market-Order. Als <b>Stop-Loss</b> ist sie dein Notausgang.</li></ul>`},
+  {h: 'Long und Short', fig: 'longshort', b: `<p><b>Long</b> heißt: Du kaufst und willst, dass der Kurs steigt. <b>Short</b> heißt: Du verkaufst zuerst (geliehen) und willst, dass der Kurs fällt. Später kaufst du günstiger zurück.</p><p>Als Daytrader kannst du in beide Richtungen Geld verdienen. Und verlieren.</p>`}
+ ], quiz: [
+  {q: 'Was unterscheidet Day Trading vom Swing Trading?', a: ['Positionen werden am selben Tag geschlossen', 'Man handelt nur Kryptowährungen', 'Man hält mindestens eine Woche', 'Man nutzt nur Limit-Orders'], why: 'Day Trading = rein und raus am selben Tag. Swing Trader halten Tage bis Wochen.'},
+  {q: 'Bid 100,00 und Ask 100,04. Wie groß ist der Spread?', a: ['0,04', '100,02', '0,02', '200,04'], why: 'Spread = Ask − Bid = 100,04 − 100,00 = 0,04.'},
+  {q: 'Du willst sofort rein, der genaue Preis ist dir egal. Welche Order?', a: ['Market-Order', 'Limit-Order', 'Stop-Loss', 'Gar keine'], why: 'Die Market-Order wird sofort zum besten verfügbaren Preis ausgeführt.'},
+  {q: 'Was bedeutet „short gehen“?', a: ['Auf fallende Kurse setzen', 'Eine Aktie nur kurz halten', 'Mit wenig Geld handeln', 'Nur Gewinne mitnehmen'], why: 'Short = verkaufen und später günstiger zurückkaufen.'},
+  {q: 'Was passiert, wenn dein Stop-Loss-Preis erreicht wird?', a: ['Die Order wird zur Market-Order', 'Die Order wird gelöscht', 'Sie wartet, bis der Kurs zurückkommt', 'Die Position wird verdoppelt'], why: 'Ein Stop wird bei Erreichen zur Market-Order und schließt die Position.'}
+ ]},
+ {id: 'm2', t: 'Kerzencharts', sub: 'OHLC, Körper, Dochte, Zeiteinheiten, Volumen', cards: [
+  {h: 'Eine Kerze erzählt eine Geschichte', fig: 'anatomy', b: `<p>Jede Kerze fasst einen Zeitraum zusammen, mit vier Preisen: <b>Open, High, Low, Close</b> (kurz OHLC). Grün heißt: Close liegt über Open. Rot heißt: Close liegt unter Open.</p>`},
+  {h: 'Körper und Dochte lesen', fig: 'wicks', b: `<ul><li><b>Großer Körper</b>: eine Seite hat klar gewonnen.</li><li><b>Langer oberer Docht</b>: Der Preis war oben, wurde aber wieder runtergedrückt. Verkäufer haben abgelehnt.</li><li><b>Langer unterer Docht</b>: Käufer haben tiefe Preise abgelehnt.</li><li><b>Winziger Körper</b>: Unentschlossenheit.</li></ul>`},
+  {h: 'Zeiteinheiten', b: `<p>Eine 5-Minuten-Kerze zeigt 5 Minuten Handel, eine 1-Minuten-Kerze eine Minute. Viele Daytrader suchen Setups auf dem <b>5-Minuten-Chart</b> und timen den Einstieg auf dem <b>1-Minuten-Chart</b>.</p><p>Faustregel: Der höhere Zeitrahmen gibt die Richtung vor, der niedrigere den Einstieg.</p>`},
+  {h: 'Volumen: die Wahrheitsprobe', b: `<p>Volumen zeigt, wie viele Stück gehandelt wurden. Eine Bewegung mit <b>hohem Volumen</b> hat echte Beteiligung. Ein Ausbruch mit wenig Volumen ist verdächtig und scheitert öfter.</p><p>Am meisten Volumen gibt es meist zur <b>Markteröffnung</b> und kurz vor <b>Handelsschluss</b>. Mittags wird es ruhig.</p>`}
+ ], quiz: [
+  {q: 'Wofür steht OHLC?', a: ['Open, High, Low, Close', 'Order, Hold, Limit, Cancel', 'Over, High, Low, Change', 'Open, Hedge, Long, Call'], why: 'Die vier Preise einer Kerze.'},
+  {q: 'Eine grüne Kerze bedeutet …', a: ['Close liegt über Open', 'Der Kurs ist heute gestiegen', 'Hohes Volumen', 'Close liegt unter Open'], why: 'Die Farbe vergleicht Close mit Open der gleichen Kerze.'},
+  {q: 'Was zeigt ein langer oberer Docht?', a: ['Höhere Preise wurden abgelehnt', 'Käufer haben die volle Kontrolle', 'Der Kurs bleibt sicher oben', 'Es gab kein Volumen'], why: 'Der Kurs war oben, wurde aber zurückgedrückt: Verkäufer waren stark.'},
+  {q: 'Was zeigt eine 5-Minuten-Kerze?', a: ['Den Handel von 5 Minuten', 'Fünf Trades', 'Die letzten 5 Tage', 'Fünf Prozent Bewegung'], why: 'Jede Kerze steht für genau ihren Zeitraum.'},
+  {q: 'Ein Ausbruch passiert mit sehr hohem Volumen. Das ist …', a: ['glaubwürdiger als mit niedrigem Volumen', 'ein sicheres Verkaufssignal', 'bedeutungslos', 'immer ein Fakeout'], why: 'Volumen bestätigt, dass viele Teilnehmer die Bewegung tragen.'}
+ ]},
+ {id: 'm3', t: 'Kerzenmuster', sub: 'Doji, Hammer, Shooting Star, Engulfing, Inside Bar', cards: [
+  {h: 'Doji: Unentschlossenheit', fig: 'doji', b: `<p>Open und Close liegen fast gleich, oft mit Dochten auf beiden Seiten. Allein bedeutet ein Doji wenig. <b>Nach einem starken Trend</b> kann er zeigen, dass die Kraft nachlässt.</p>`},
+  {h: 'Hammer und Shooting Star', fig: 'hammer', b: `<p>Der <b>Hammer</b> hat einen kleinen Körper oben und einen langen unteren Docht (mindestens doppelt so lang wie der Körper). Nach einem Abwärtstrend zeigt er: Verkäufer wurden zurückgeschlagen.</p><p>Der <b>Shooting Star</b> ist das Spiegelbild: langer oberer Docht nach einem Anstieg.</p>`},
+  {h: 'Engulfing: die Übernahme', fig: 'bullE', b: `<p>Beim <b>Bullish Engulfing</b> umschließt der grüne Körper den roten Körper davor komplett. Die Käufer haben in einer Kerze alles zurückerobert. <b>Bearish Engulfing</b> ist das Gegenteil.</p>`},
+  {h: 'Inside Bar und Marubozu', fig: 'inside', b: `<p>Die <b>Inside Bar</b> liegt mit Hoch und Tief komplett in der Vorkerze. Der Markt sammelt Energie. Ein Ausbruch über das Hoch oder unter das Tief ist ein häufiger Trigger.</p><p>Der <b>Marubozu</b> ist ein großer Körper fast ohne Dochte: eine Seite hatte die volle Kontrolle.</p>`},
+  {h: 'Kontext schlägt Muster', b: `<p>Ein Muster ist nur so gut wie <b>der Ort, an dem es entsteht</b>. Ein Hammer an einer wichtigen Unterstützung mit hohem Volumen ist interessant. Derselbe Hammer mitten im Nirgendwo ist Rauschen.</p><div class="formula">Muster + wichtiges Level + Volumen = Signal</div><p>Trainiere dein Auge jetzt im <b>Muster-Blitz</b> in der Arcade.</p>`}
+ ], quiz: [
+  {q: 'Welche Kerze ist ein Hammer?', a: ['Kleiner Körper oben, langer unterer Docht', 'Großer Körper ohne Dochte', 'Langer oberer Docht, kleiner Körper unten', 'Open gleich Close, keine Dochte'], why: 'Der lange untere Docht zeigt, dass tiefe Preise abgelehnt wurden.'},
+  {q: 'Was bedeutet ein Doji?', a: ['Unentschlossenheit: Open ≈ Close', 'Starker Kaufdruck', 'Ein garantierter Trendwechsel', 'Der Markt ist geschlossen'], why: 'Weder Käufer noch Verkäufer konnten sich durchsetzen.'},
+  {q: 'Was ist ein Bullish Engulfing?', a: ['Grüner Körper umschließt den roten Körper davor', 'Zwei rote Kerzen hintereinander', 'Eine Kerze innerhalb der Vorkerze', 'Ein langer oberer Docht'], why: 'Die Käufer „verschlingen“ die vorherige Verkäuferkerze.'},
+  {q: 'Warum ist der Kontext so wichtig?', a: ['Ein Muster ohne wichtiges Level ist wenig aussagekräftig', 'Muster funktionieren immer gleich', 'Kontext zählt nur bei Krypto', 'Weil Dochte sonst nicht zählen'], why: 'Wo ein Muster auftaucht, entscheidet über seine Bedeutung.'},
+  {q: 'Was signalisiert eine Inside Bar?', a: ['Kompression: oft folgt ein Ausbruch', 'Das sichere Ende des Trends', 'Extrem hohes Volumen', 'Einen Gap'], why: 'Die Spanne zieht sich zusammen, danach wird es oft schnell.'}
+ ]},
+ {id: 'm4', t: 'Trend & Struktur', sub: 'Hochs und Tiefs, Support, Widerstand, Ausbrüche', cards: [
+  {h: 'Was ist ein Trend?', fig: 'trendUp', b: `<p>Ein <b>Aufwärtstrend</b> besteht aus <b>höheren Hochs und höheren Tiefs</b>. Ein Abwärtstrend aus tieferen Hochs und tieferen Tiefs. Solange die Struktur hält, gilt der Trend.</p><div class="formula">„The trend is your friend“: Handle mit dem Trend, nicht dagegen.</div>`},
+  {h: 'Support und Widerstand', fig: 'range', b: `<p><b>Support</b> ist eine Zone, an der Käufer wiederholt eingestiegen sind. <b>Widerstand</b> eine Zone, an der Verkäufer gedrückt haben. Dazwischen läuft der Kurs seitwärts: eine <b>Range</b>.</p><p>Wichtige Intraday-Level: Vortageshoch und -tief, Tageseröffnung, runde Zahlen, Prämarkt-Hoch und -Tief.</p>`},
+  {h: 'Ausbruch', fig: 'breakout', b: `<p>Ein <b>Breakout</b> passiert, wenn der Kurs ein Level mit Kraft und Volumen durchbricht. Danach wird alter Widerstand oft zu neuem Support (<i>Rollentausch</i>).</p><p>Ein logischer Stop liegt <b>unter dem Ausbruchslevel</b>: Fällt der Kurs zurück, war die Idee falsch.</p>`},
+  {h: 'Fakeout: die Falle', fig: 'fakeout', b: `<p>Nicht jeder Ausbruch hält. Beim <b>Fakeout</b> sticht der Kurs kurz über das Level und fällt dann zurück in die Range. Wer zu früh gekauft hat, sitzt in der Falle.</p><p>Schutz: auf den <b>Schlusskurs</b> der Kerze warten, Volumen prüfen und immer einen Stop setzen.</p>`}
+ ], quiz: [
+  {q: 'Woran erkennst du einen Aufwärtstrend?', a: ['Höhere Hochs und höhere Tiefs', 'Viele grüne Kerzen am Stück', 'RSI über 50', 'Ein Gap nach oben'], why: 'Die Struktur aus Hochs und Tiefs definiert den Trend.'},
+  {q: 'Ein klar gebrochener Widerstand wird oft zu …', a: ['Support', 'einem stärkeren Widerstand', 'gar nichts', 'einem Doji'], why: 'Rollentausch: Alter Widerstand dient danach oft als Unterstützung.'},
+  {q: 'Was ist ein Fakeout?', a: ['Ein Ausbruch, der schnell in die Range zurückfällt', 'Ein besonders starker Trend', 'Eine gefälschte Order', 'Ein Gap beim Open'], why: 'Der Ausbruch hält nicht und fängt späte Käufer.'},
+  {q: 'Wie handelst du in einer Range eher?', a: ['Kaufen nahe Support, verkaufen nahe Widerstand', 'Kaufen am Widerstand', 'Mitten in der Range einsteigen', 'Ranges ignorieren, dort ist es sicher'], why: 'An den Rändern ist das Chance-Risiko-Verhältnis am besten.'},
+  {q: 'Wo liegt ein logischer Stop für einen Long-Ausbruch?', a: ['Unter dem Ausbruchslevel', 'Weit über dem Entry', 'Gar kein Stop nötig', 'Genau auf dem Entry'], why: 'Fällt der Kurs wieder unter das Level, ist die Ausbruchsidee widerlegt.'}
+ ]},
+ {id: 'm5', t: 'Indikatoren', sub: 'VWAP, EMA, RSI und ihre Grenzen', cards: [
+  {h: 'VWAP: der Tages-Kompass', fig: 'vwap', b: `<p>Der <b>VWAP</b> (volumengewichteter Durchschnittspreis) zeigt, wo heute im Schnitt gehandelt wurde. Er startet jeden Morgen neu.</p><ul><li>Kurs <b>über</b> VWAP: Käufer haben die Kontrolle. Eher long denken.</li><li>Kurs <b>unter</b> VWAP: Verkäufer haben die Kontrolle. Eher short denken.</li></ul><p>Große Fonds nutzen den VWAP als Benchmark. Deshalb reagiert der Kurs oft an dieser Linie.</p>`},
+  {h: 'EMA 9 und EMA 20', fig: 'ema', b: `<p>Der <b>exponentielle gleitende Durchschnitt</b> (EMA) glättet den Kurs und gewichtet neue Kerzen stärker als ein einfacher Durchschnitt (SMA). Er reagiert dadurch schneller.</p><p>Im Trend laufen Kurse oft an der EMA 9 oder EMA 20 entlang. Rücksetzer dorthin sind beliebte Einstiege.</p>`},
+  {h: 'RSI: überkauft, überverkauft', b: `<p>Der <b>RSI</b> misst von 0 bis 100, wie stark die jüngsten Gewinne im Vergleich zu den Verlusten waren. Über 70 gilt als <b>überkauft</b>, unter 30 als <b>überverkauft</b>.</p><div class="warn">Achtung: In starken Trends bleibt der RSI lange über 70. „Überkauft“ ist kein Verkaufssignal für sich.</div>`},
+  {h: 'Indikatoren hinken hinterher', b: `<p>Alle Indikatoren werden aus <b>vergangenen</b> Kursen berechnet. Sie sagen nichts voraus, sie fassen zusammen. Nutze wenige, verstehe sie gut und lass den Preis selbst entscheiden.</p><div class="formula">Preis &amp; Volumen zuerst · Indikatoren als Bestätigung</div>`}
+ ], quiz: [
+  {q: 'Was ist der VWAP?', a: ['Der volumengewichtete Durchschnittspreis des Tages', 'Der Vortagesschluss', 'Der höchste Preis des Tages', 'Ein Kerzenmuster'], why: 'Er gewichtet jeden Preis mit dem gehandelten Volumen.'},
+  {q: 'Der Kurs liegt den ganzen Vormittag über dem VWAP. Das heißt meistens …', a: ['Käufer haben die Kontrolle', 'Short ist die bessere Idee', 'Der Kurs fällt gleich', 'Gar nichts'], why: 'Über dem VWAP haben Käufer im Schnitt im Plus.'},
+  {q: 'Was stimmt beim RSI über 70?', a: ['In starken Trends kann er lange dort bleiben', 'Du musst sofort short gehen', 'Der Kurs fällt garantiert', 'Er zeigt das Volumen'], why: 'Überkauft heißt nicht „gleich vorbei“.'},
+  {q: 'Warum reagiert die EMA schneller als die SMA?', a: ['Neue Kurse werden stärker gewichtet', 'Sie nutzt mehr Kerzen', 'Sie ignoriert Dochte', 'Sie nutzt das Volumen'], why: 'Exponentielle Gewichtung bevorzugt aktuelle Preise.'},
+  {q: 'Warum sind Indikatoren „nachlaufend“?', a: ['Sie werden aus vergangenen Kursen berechnet', 'Sie werden verzögert angezeigt', 'Sie funktionieren nur abends', 'Sie sind kostenpflichtig'], why: 'Ein Indikator fasst Vergangenes zusammen.'}
+ ]},
+ {id: 'm6', t: 'Risikomanagement', sub: '1-%-Regel, Positionsgröße, CRV, Erwartungswert', cards: [
+  {h: 'Die 1-%-Regel', b: `<p>Riskiere pro Trade höchstens <b>1 % deines Kontos</b>. Bei 10.000 € sind das 100 €. Klingt wenig? Genau das ist der Punkt.</p><p>Selbst 10 Verluste in Folge kosten dich dann nur rund 10 %. Mit 10 % Risiko pro Trade wärst du nach so einer Serie fast pleite.</p><div class="formula">Überleben kommt vor Gewinnen.</div>`},
+  {h: 'Positionsgröße berechnen', b: `<p>Nicht das Bauchgefühl bestimmt die Stückzahl, sondern dein Stop:</p><div class="formula">Stück = (Konto × Risiko %) ÷ (Entry − Stop)</div><p>Beispiel: Konto 20.000 €, Risiko 1 % = 200 €. Entry 50 €, Stop 49 € → 1 € Risiko pro Aktie → <b>200 Aktien</b>.</p><p>Weiter Stop = weniger Aktien. Enger Stop = mehr Aktien. Das Risiko in Euro bleibt gleich.</p>`},
+  {h: 'Wo gehört der Stop hin?', fig: 'rr', b: `<p>Der Stop liegt dort, wo <b>deine Idee widerlegt ist</b>: unter dem letzten Tief, unter dem Ausbruchslevel, unter dem VWAP. Nicht bei einem zufälligen Eurobetrag.</p><p>Und: Einen Stop verschiebt man nur <b>in deine Richtung</b>, nie weiter weg.</p>`},
+  {h: 'Chance-Risiko-Verhältnis (CRV)', b: `<p>Das CRV vergleicht möglichen Gewinn mit möglichem Verlust. Entry 100, Stop 98, Ziel 106 → 6 € Chance zu 2 € Risiko = <b>3:1</b>. Trader sagen auch: Das Ziel liegt bei <b>3R</b>.</p><div class="formula">Break-even-Trefferquote = 1 ÷ (1 + CRV)</div><p>Bei 2:1 reicht eine Trefferquote von rund 33 %, um nicht zu verlieren (ohne Gebühren).</p>`},
+  {h: 'Erwartungswert und Tageslimit', b: `<div class="formula">E = Trefferquote × Ø Gewinn − Verlustquote × Ø Verlust</div><p>Beispiel: 40 % Treffer à 200 €, 60 % Verluste à 100 € → E = 80 − 60 = <b>+20 € pro Trade</b>. Eine Strategie mit positivem Erwartungswert gewinnt über viele Trades, nicht bei jedem.</p><p>Setz dir ein <b>Tagesverlustlimit</b> (z. B. 3R). Erreicht? Feierabend. Ohne Diskussion.</p>`}
+ ], quiz: [
+  {q: 'Konto 10.000 €, 1 % Risiko pro Trade. Wie viel darfst du verlieren?', a: ['100 €', '1.000 €', '10 €', '1 €'], why: '1 % von 10.000 € = 100 €.'},
+  {q: 'Konto 20.000 €, 1 % Risiko, Entry 50 €, Stop 49 €. Wie viele Aktien?', a: ['200', '400', '20', '100'], why: '200 € Risiko ÷ 1 € pro Aktie = 200 Aktien.'},
+  {q: 'Entry 100, Stop 98, Ziel 106. Welches CRV?', a: ['3:1', '2:1', '6:1', '1:3'], why: 'Chance 6 ÷ Risiko 2 = 3.'},
+  {q: 'Bei einem CRV von 2:1 liegt die Break-even-Trefferquote bei etwa …', a: ['33 %', '50 %', '66 %', '20 %'], why: '1 ÷ (1 + 2) ≈ 33 %.'},
+  {q: 'Dein Tagesverlustlimit ist erreicht. Was tust du?', a: ['Für heute aufhören', 'Doppelte Größe, um es zurückzuholen', 'Den Stop entfernen', 'Auf einen anderen Markt wechseln'], why: 'Das Limit schützt dich vor deinem schlechtesten Tag und vor Revenge-Trades.'}
+ ]},
+ {id: 'm7', t: 'Setups', sub: 'Opening Range, VWAP-Reclaim, Bull Flag, Pullback', cards: [
+  {h: 'Opening Range Breakout (ORB)', fig: 'orb', b: `<p>Markiere Hoch und Tief der ersten 15 bis 30 Minuten. Schließt eine Kerze mit Volumen <b>über dem Hoch</b>, ist das ein Long-Trigger. Unter dem Tief entsprechend short.</p><ul><li><b>Entry</b>: Schluss über dem OR-Hoch</li><li><b>Stop</b>: Mitte der Range oder unter dem Ausbruchstief</li><li><b>Ziel</b>: 2R oder nächstes Level</li></ul>`},
+  {h: 'VWAP-Reclaim', fig: 'reclaim', b: `<p>Der Kurs fällt unter den VWAP, die Verkäufer schaffen aber keinen Durchbruch. Dann holt er den VWAP zurück und <b>hält darüber</b>. Wer short war, muss zurückkaufen. Das treibt den Kurs.</p><ul><li><b>Entry</b>: erste Kerze, die über dem VWAP schließt und hält</li><li><b>Stop</b>: unter dem Tief vor dem Reclaim</li></ul>`},
+  {h: 'Bull Flag', fig: 'flag', b: `<p>Erst ein starker Anstieg (die <b>Fahnenstange</b>), dann eine flache, leicht fallende Pause mit weniger Volumen (die <b>Flagge</b>). Bricht der Kurs über das Flaggen-Hoch, geht die Bewegung oft weiter.</p><ul><li><b>Entry</b>: Ausbruch über das Flaggen-Hoch</li><li><b>Stop</b>: unter dem Flaggen-Tief</li></ul>`},
+  {h: 'Pullback zur EMA', fig: 'pullback', b: `<p>Im klaren Trend springst du nicht hinterher. Du wartest auf einen <b>Rücksetzer zur EMA 9 oder 20</b> und steigst ein, wenn eine Kerze dort wieder in Trendrichtung dreht.</p><ul><li><b>Stop</b>: unter dem Pullback-Tief</li><li><b>Ziel</b>: letztes Hoch oder 2R</li></ul>`},
+  {h: 'Die Checkliste vor jedem Trade', b: `<ol style="margin:0;padding-left:22px;display:grid;gap:6px"><li>Welches Setup ist das genau?</li><li>Passt es zum Trend (VWAP, Struktur)?</li><li>Wo ist mein <b>Entry</b>, wo mein <b>Stop</b>, wo mein <b>Ziel</b>?</li><li>Ist das CRV mindestens 2:1?</li><li>Wie viele Stück bei 1 % Risiko?</li></ol><p>Kannst du eine Frage nicht beantworten, gibt es keinen Trade. Übe das jetzt im <b>Simulator</b>.</p>`}
+ ], quiz: [
+  {q: 'Was ist ein Opening Range Breakout?', a: ['Ausbruch aus Hoch oder Tief der ersten Minuten', 'Ein Kauf genau zur Eröffnung', 'Ein Gap über Nacht', 'Ein Kerzenmuster am Abend'], why: 'Die Spanne der ersten 15 bis 30 Minuten wird zum Trigger.'},
+  {q: 'Was beschreibt einen VWAP-Reclaim?', a: ['Kurs holt den VWAP zurück und hält darüber', 'Kurs fällt unter den VWAP', 'VWAP und EMA kreuzen sich', 'Der VWAP wird neu berechnet'], why: 'Rückeroberung des VWAP zwingt Shorts zum Eindecken.'},
+  {q: 'Woraus besteht eine Bull Flag?', a: ['Starker Anstieg, dann flache Konsolidierung', 'Zwei Dojis hintereinander', 'Ein Gap nach unten', 'Langer unterer Docht'], why: 'Fahnenstange plus Flagge, danach oft Fortsetzung.'},
+  {q: 'Wo liegt der Stop beim Long-Pullback zur EMA?', a: ['Unter dem Pullback-Tief', 'Über dem letzten Hoch', 'Genau auf der EMA', 'Gar nicht nötig'], why: 'Bricht das Pullback-Tief, ist der Trend fraglich.'},
+  {q: 'Was legst du VOR jedem Trade fest?', a: ['Entry, Stop, Ziel und Positionsgröße', 'Nur das Ziel', 'Nur den Entry', 'Nichts, man reagiert spontan'], why: 'Erst der Plan, dann der Klick.'}
+ ]},
+ {id: 'm8', t: 'Psychologie & Routine', sub: 'FOMO, Revenge, Journal, der Weg zum Echtgeld', cards: [
+  {h: 'Deine größten Gegner: FOMO und Revenge', b: `<ul><li><b>FOMO</b> (Fear of Missing Out): Der Kurs rennt, du springst spät hinterher. Meist kaufst du dann das Hoch.</li><li><b>Revenge Trading</b>: Nach einem Verlust willst du es sofort zurückholen, oft mit mehr Risiko. So werden aus kleinen Verlusten große.</li><li><b>Overtrading</b>: zu viele mittelmäßige Trades aus Langeweile.</li></ul>`},
+  {h: 'Der Trading-Plan', b: `<p>Schreib ihn auf, bevor der Markt öffnet:</p><ul><li>Welche Märkte und Uhrzeiten?</li><li>Welche 1 bis 2 Setups?</li><li>Risiko pro Trade und Tageslimit?</li><li>Wann höre ich auf, auch bei Gewinn?</li></ul><p>Wer ohne Plan tradet, tradet nach Gefühl.</p>`},
+  {h: 'Das Trading-Journal', b: `<p>Notiere zu jedem Trade: Setup, Entry, Stop, Ziel, Ergebnis in R, <b>deine Emotion</b> und ob du den Plan eingehalten hast.</p><p>Nach 50 Trades siehst du schwarz auf weiß, was funktioniert und welche Fehler dich am meisten kosten.</p>`},
+  {h: 'Kosten und Steuern', b: `<p>Gebühren, Spreads und Slippage fressen gerade bei vielen kleinen Trades einen großen Teil des Gewinns. Rechne sie immer mit.</p><p>In Deutschland unterliegen Gewinne der <b>Abgeltungsteuer</b> plus Soli. Die Details hängen von Produkt und Situation ab. Kläre das mit einem Steuerberater, bevor du loslegst.</p>`},
+  {h: 'Dein Weg zum Echtgeld', b: `<ol style="margin:0;padding-left:22px;display:grid;gap:6px"><li>Alle Module hier abschließen.</li><li>Mindestens <b>2–3 Monate</b> mit Demokonto handeln, alles im Journal.</li><li>Nur weitermachen, wenn deine Zahlen einen <b>positiven Erwartungswert</b> zeigen.</li><li>Mit kleinem Geld starten, das du verlieren kannst.</li><li>Größe erst steigern, wenn die Disziplin sitzt.</li></ol><div class="warn">Day Trading ist kein schneller Weg zu Geld. Die meisten verlieren. Wer es trotzdem probiert, braucht Geduld, einen Plan und eiserne Regeln.</div>`}
+ ], quiz: [
+  {q: 'Was ist FOMO beim Trading?', a: ['Angst, eine Bewegung zu verpassen, und hinterherspringen', 'Eine Ordertyp-Abkürzung', 'Ein Indikator', 'Ein Kerzenmuster'], why: 'FOMO lässt dich oft genau am Hoch einsteigen.'},
+  {q: 'Was ist Revenge Trading?', a: ['Nach einem Verlust sofort größer handeln, um es zurückzuholen', 'Gegen den Trend handeln', 'Einen Gewinn absichern', 'Einen Broker wechseln'], why: 'Emotion statt Plan: der schnellste Weg, ein Konto zu zerstören.'},
+  {q: 'Was gehört ins Trading-Journal?', a: ['Setup, Entry, Stop, Ergebnis, Emotion, Fehler', 'Nur der Gewinn', 'Nur Gewinner-Trades', 'Die Kurse anderer Aktien'], why: 'Nur vollständige Daten zeigen dir deine echten Muster.'},
+  {q: 'Wann ist der richtige Zeitpunkt für Echtgeld?', a: ['Wenn du über Monate einen positiven Erwartungswert nachweist', 'Nach dem ersten Gewinntag', 'Sofort, Demo bringt nichts', 'Wenn ein Influencer es empfiehlt'], why: 'Erst Beweis, dann Risiko.'},
+  {q: 'Was zählt langfristig am meisten?', a: ['Risikomanagement und Disziplin', 'Eine Trefferquote von 90 %', 'Möglichst viele Indikatoren', 'Gute Tipps aus Chats'], why: 'Kleine Verluste, Plan einhalten: Das unterscheidet Überlebende.'}
+ ]}
+];
+const TIPS = ['Kein Trade ist auch eine Position.', 'Plane den Trade, trade den Plan.', 'Verluste klein halten ist wichtiger als große Gewinne.', 'Den Stop nie weiter weg schieben, nur nachziehen.', 'Nach zwei Verlusten in Folge: kurze Pause.', 'Die ersten 5 Minuten nach der Eröffnung sind am wildesten. Beobachten lohnt sich.', 'Überkauft heißt nicht „gleich vorbei“.', 'Dein Journal ist dein bester Lehrer.', 'Miss deinen Erfolg in R, nicht in Euro.', 'Mittags ist der Markt oft zäh: weniger Trades, mehr Geduld.'];
+
+/* ---------- Icons ---------- */
+const I = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+  path: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg>',
+  arcade: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.5" r="1" fill="currentColor"/><circle cx="18" cy="13.5" r="1" fill="currentColor"/></svg>',
+  sim: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4v16M12 7v13M18 3v14"/><rect x="4.5" y="8" width="3" height="7" rx="1" fill="currentColor"/><rect x="10.5" y="10" width="3" height="5" rx="1"/><rect x="16.5" y="5" width="3" height="8" rx="1" fill="currentColor"/></svg>',
+  me: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+  bolt: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>',
+  calc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg>',
+  flame: '<svg viewBox="0 0 24 24" width="16" height="16" fill="var(--accent)"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3-1-6 1-9z"/></svg>'
+};
+
+/* ---------- Shell ---------- */
+let GEN = 0;
+const NAV = [['home', 'Start', 'H', I.home], ['path', 'Lernpfad', 'L', I.path], ['arcade', 'Arcade', 'A', I.arcade], ['sim', 'Simulator', 'T', I.sim], ['profile', 'Profil', 'P', I.me]];
+let V = {name: 'home', key: null, nav: true};
+let helpOpen = false;
+function renderStats(){
+  const l = levelOf(S.xp), lo = LV[l], hi = LV[l + 1] || lo + 1000, pct = clamp((S.xp - lo) / (hi - lo) * 100, 0, 100);
+  $('#stats').innerHTML = `<div class="lvl"><b>Level ${l + 1}</b><span class="muted">${TITLES[l]}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div class="lvl"><span class="num">${de(S.xp)} XP</span><span class="chip" style="padding:2px 8px">${I.flame}<span class="num">${S.streak}</span></span></div>`;
+}
+function renderNav(){ const top = ['blitz', 'risk', 'player'].includes(V.name) ? (V.name === 'player' ? 'path' : 'arcade') : V.name; $('#nav').innerHTML = NAV.map(([id, t, k, ic]) => `<button class="nav ${top === id ? 'on' : ''}" data-act="go" data-v="${id}" aria-label="${t}">${ic}<span>${t}</span><kbd>${k}</kbd></button>`).join(''); }
+function go(name, arg){
+  stopTimers(); GEN++;
+  V = {name, key: null, nav: true};
+  ({home, path, arcade, sim: simView, profile, player, blitz, risk})[name](arg);
+  renderNav(); renderStats(); main.scrollTop = 0;
+}
+let timers = [];
+function stopTimers(){ timers.forEach(clearInterval); timers = []; if(SIM){ SIM.playing = false; } }
+
+/* ---------- Views: Home ---------- */
+function modDone(m){ return S.mods[m.id] && S.mods[m.id].passed; }
+function nextMod(){ return MODS.find(m => !modDone(m)); }
+function home(){
+  ensureQuests();
+  const nm = nextMod(), done = MODS.filter(modDone).length, l = levelOf(S.xp);
+  const tip = TIPS[(new Date().getDate()) % TIPS.length];
+  main.innerHTML = `<div class="stage">
+   <section class="hero">
+     <div style="display:grid;gap:14px">
+       <span class="eyebrow">${S.xp ? 'Level ' + (l + 1) + ' · ' + TITLES[l] : 'Willkommen in der Chartschule'}</span>
+       <h1>${nm ? (S.xp ? 'Weiter mit Modul ' + (MODS.indexOf(nm) + 1) + ': ' + nm.t : 'Von null zum ersten simulierten Trade') : 'Alle Module geschafft!'}</h1>
+       <p>${nm ? nm.sub + '. Kurze Lektionen, ein Quiz, dann ab in die Arcade.' : 'Halte deine Skills im Simulator und in der Arcade frisch.'}</p>
+       <div class="segs" aria-label="${done} von 8 Modulen">${MODS.map(m => `<i class="${modDone(m) ? 'done' : ''}"></i>`).join('')}</div>
+       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+         <button class="btn pri big" data-act="${nm ? 'learn' : 'go'}" data-v="${nm ? nm.id : 'sim'}">${nm ? (S.mods[nm.id] ? 'Weiterlernen' : 'Los geht\'s') : 'Zum Simulator'} <kbd>Enter</kbd></button>
+       </div>
+     </div>
+     <canvas id="heroc" aria-hidden="true"></canvas>
+   </section>
+   <div class="grid2">
+     <section class="card"><div class="navrow" style="margin-bottom:6px"><h3>Tagesquests</h3><span class="eyebrow">je +25 XP</span></div>
+       ${QUESTS.map(q => `<div class="quest"><span class="tick ${S.quests.done[q.id] ? 'ok' : ''}">${S.quests.done[q.id] ? I.check : ''}</span><span>${q.t}</span></div>`).join('')}
+     </section>
+     <section class="card tip" style="display:grid;gap:10px;align-content:start"><span class="eyebrow" style="color:var(--ink);opacity:.7">Regel des Tages</span><h2>${tip}</h2>
+       <p class="muted" style="color:var(--ink);opacity:.75">Fortschritt: ${done}/8 Module · ${S.simDays} Sim-Tage · ${Object.keys(S.badges).length}/${BADGES.length} Abzeichen</p></section>
+   </div>
+   <div class="grid3">${gameCards()}</div>
+   <p class="disclaimer">Chartschule ist eine Lern-App und keine Anlageberatung. Alle Kurse sind simuliert. Dein Fortschritt wird nur in diesem Browser gespeichert.</p>
+  </div>`;
+  drawHero();
+  V.key = k => { if(k === 'Enter'){ nm ? go('player', {id: nm.id}) : go('sim'); return true; } };
+}
+function gameCards(){
+  return `<button class="card game" data-act="go" data-v="blitz"><span class="ico">${I.bolt}</span><h3>Muster-Blitz</h3><p class="muted">45 Sekunden, so viele Kerzenmuster wie möglich erkennen. Combos geben Extrapunkte.</p><span class="foot"><span>Rekord <b class="num">${S.blitzBest}</b></span><span><kbd>1</kbd>–<kbd>4</kbd></span></span></button>
+  <button class="card game" data-act="go" data-v="risk"><span class="ico">${I.calc}</span><h3>Risiko-Sprint</h3><p class="muted">Positionsgröße, CRV und Trefferquote im Kopf. Wie im echten Trade, nur ohne Verlust.</p><span class="foot"><span>Rekord <b class="num">${S.riskBest}</b></span><span><kbd>1</kbd>–<kbd>4</kbd></span></span></button>
+  <button class="card game" data-act="go" data-v="sim"><span class="ico">${I.sim}</span><h3>Trading-Simulator</h3><p class="muted">Handle einen simulierten Tag Kerze für Kerze. Bewertet wird deine Disziplin, nicht dein Glück.</p><span class="foot"><span>${S.simDays} Tage · beste Disziplin <b class="num">${S.simBestDisc}</b></span><span><kbd>B</kbd> <kbd>S</kbd> <kbd>␣</kbd></span></span></button>`;
+}
+function drawHero(){
+  const c = $('#heroc'); if(!c) return;
+  const w = c.clientWidth, h = c.clientHeight; c.width = w * devicePixelRatio; c.height = h * devicePixelRatio;
+  const x = c.getContext('2d'); x.scale(devicePixelRatio, devicePixelRatio);
+  const r = rng(42 + S.xp), n = Math.max(16, Math.floor(w / 14)); let p = 50; const cs = [];
+  for(let i = 0; i < n; i++){ const o = p, cl = o + (r() - .42) * 3; cs.push([o, Math.max(o, cl) + r() * 1.2, Math.min(o, cl) - r() * 1.2, cl]); p = cl; }
+  const lo = Math.min(...cs.map(k => k[2])), hi = Math.max(...cs.map(k => k[1])), Y = v => 6 + (hi - v) / (hi - lo) * (h - 12), st = w / n;
+  cs.forEach((k, i) => { const col = k[3] >= k[0] ? css('--up') : css('--down'); x.strokeStyle = x.fillStyle = col; x.globalAlpha = .35 + .65 * (i / n); x.beginPath(); x.moveTo(i * st + st / 2, Y(k[1])); x.lineTo(i * st + st / 2, Y(k[2])); x.stroke(); x.fillRect(i * st + st * .2, Y(Math.max(k[0], k[3])), st * .6, Math.max(1.5, Math.abs(Y(k[0]) - Y(k[3])))); });
+  x.globalAlpha = 1;
+}
+
+/* ---------- Views: Path ---------- */
+function path(){
+  main.innerHTML = `<div class="stage"><div style="display:grid;gap:6px"><span class="eyebrow">Lernpfad · 8 Module</span><h1>Vom ersten Chart zum eigenen Plan</h1><p class="muted">Jedes Modul: kurze Karten zum Durchblättern, dann 5 Quizfragen. Ab 3 richtigen Antworten ist das Modul geschafft und das nächste wird frei.</p></div>
+   <div class="mods">${MODS.map((m, i) => { const st = S.mods[m.id] || {}, done = st.passed, open = i === 0 || modDone(MODS[i - 1]); const cls = done ? 'done' : open ? 'open' : 'locked';
+     return `<section class="card mod ${cls}"><span class="no">${done ? I.check.replace('16', '26').replace('16', '26') : i + 1}</span><div><h3>${m.t}</h3><p class="muted" style="font-size:15px">${m.sub}</p>
+     <p class="muted" style="font-size:13px;margin-top:6px">${m.cards.length} Karten · Quiz ${st.best != null ? 'bestes Ergebnis ' + st.best + '/5' : 'offen'}</p>
+     <div class="acts">${open || done ? `<button class="btn ${done ? '' : 'pri'}" data-act="learn" data-v="${m.id}">${done ? 'Wiederholen' : st.learned ? 'Nochmal lesen' : 'Starten'}</button><button class="btn" data-act="quiz" data-v="${m.id}">Nur Quiz</button>` : '<span class="chip">Gesperrt: erst Modul ' + i + ' abschließen</span>'}</div></div></section>`; }).join('')}</div></div>`;
+  V.key = k => { const nm = nextMod(); if(k === 'Enter' && nm){ go('player', {id: nm.id}); return true; } };
+}
+
+/* ---------- Views: Lesson + Quiz player ---------- */
+let P = null;
+function player(arg){
+  V.nav = false;
+  const m = MODS.find(x => x.id === arg.id);
+  P = {m, phase: arg.quiz ? 'quiz' : 'learn', i: 0, score: 0, picked: null, qs: m.quiz.map(q => { const order = shuffle(q.a.map((_, i) => i)); return {q: q.q, a: order.map(i => q.a[i]), c: order.indexOf(0), why: q.why}; })};
+  renderPlayer();
+  V.key = (k) => {
+    if(k === 'Escape'){ go('path'); return true; }
+    if(P.phase === 'learn'){ if(k === 'ArrowRight' || k === 'Enter' || k === ' '){ pNext(); return true; } if(k === 'ArrowLeft'){ pPrev(); return true; } }
+    else if(P.phase === 'quiz'){ if(/^[1-4]$/.test(k) && P.picked == null){ pAnswer(+k - 1); return true; } if((k === 'Enter' || k === ' ' || k === 'ArrowRight') && P.picked != null){ pNext(); return true; } }
+    else if(P.phase === 'result'){ if(k === 'Enter'){ resultContinue(); return true; } }
+  };
+}
+function renderPlayer(){
+  const m = P.m, idx = MODS.indexOf(m) + 1;
+  const total = m.cards.length + P.qs.length, at = P.phase === 'learn' ? P.i : P.phase === 'quiz' ? m.cards.length + P.i : total;
+  let body = '';
+  if(P.phase === 'learn'){
+    const c = m.cards[P.i];
+    body = `<span class="eyebrow">Modul ${idx} · Karte ${P.i + 1} von ${m.cards.length}</span><h1>${c.h}</h1>${c.fig ? `<div class="fig">${PATTERNS[c.fig] ? patFig(c.fig) : FIG[c.fig]()}</div>` : ''}<div class="lesson">${c.b}</div>
+     <div class="navrow"><button class="btn" data-act="pprev" ${P.i ? '' : 'disabled'}>Zurück <kbd>←</kbd></button><button class="btn pri big" data-act="pnext">${P.i === m.cards.length - 1 ? 'Zum Quiz' : 'Weiter'} <kbd>→</kbd></button></div>`;
+  } else if(P.phase === 'quiz'){
+    const q = P.qs[P.i];
+    body = `<span class="eyebrow">Quiz · Frage ${P.i + 1} von ${P.qs.length}</span><h2 style="font-size:26px">${q.q}</h2>
+     <div class="opts">${q.a.map((a, i) => `<button class="opt ${P.picked != null ? (i === q.c ? 'right' : i === P.picked ? 'wrong' : '') : ''}" data-act="pans" data-v="${i}" ${P.picked != null ? 'disabled' : ''}><kbd>${i + 1}</kbd><span>${a}</span></button>`).join('')}</div>
+     ${P.picked != null ? `<div class="why"><b>${P.picked === q.c ? 'Richtig!' : 'Nicht ganz.'}</b> ${q.why}</div><div class="navrow"><span></span><button class="btn pri big" data-act="pnext">${P.i === P.qs.length - 1 ? 'Ergebnis' : 'Weiter'} <kbd>Enter</kbd></button></div>` : ''}`;
+  } else {
+    const pass = P.score >= 3, nm = MODS[idx];
+    body = `<div style="display:grid;gap:14px;justify-items:center;text-align:center;padding:20px 0"><span class="eyebrow">Modul ${idx}: ${m.t}</span><div class="score-big num" style="color:var(${pass ? '--up' : '--down'})">${P.score}/5</div>
+     <h2>${P.score === 5 ? 'Perfekt! Du hast es drauf.' : pass ? 'Bestanden! Modul geschafft.' : 'Fast. Ab 3 richtigen bist du durch.'}</h2>
+     <p class="muted">${pass ? (nm ? 'Als Nächstes: ' + nm.t + '.' : 'Du hast den kompletten Lernpfad abgeschlossen!') : 'Lies die Karten nochmal kurz durch, dann klappt es.'}</p>
+     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn" data-act="go" data-v="path">Zum Lernpfad</button>${pass && nm ? `<button class="btn pri big" data-act="learn" data-v="${nm.id}">Nächstes Modul <kbd>Enter</kbd></button>` : !pass ? `<button class="btn pri big" data-act="learn" data-v="${m.id}">Nochmal lernen <kbd>Enter</kbd></button>` : `<button class="btn pri big" data-act="go" data-v="sim">Zum Simulator <kbd>Enter</kbd></button>`}</div></div>`;
+  }
+  main.innerHTML = `<div class="stage"><div class="player card" style="display:grid;gap:20px">
+    <div class="ptop"><button class="btn" data-act="go" data-v="path" aria-label="Schließen" style="min-height:40px;padding:0 12px">✕ <kbd>Esc</kbd></button><div class="bar"><i style="width:${at / total * 100}%"></i></div><span class="num muted">${at}/${total}</span></div>${body}</div></div>`;
+}
+function pPrev(){ if(P.i > 0){ P.i--; renderPlayer(); } }
+function pNext(){
+  const m = P.m;
+  if(P.phase === 'learn'){
+    if(P.i < m.cards.length - 1){ P.i++; sfx('tick'); renderPlayer(); return; }
+    const first = !(S.mods[m.id] && S.mods[m.id].learned);
+    S.mods[m.id] = Object.assign({}, S.mods[m.id], {learned: true}); save();
+    if(first) addXP(30, 'Lektion gelesen');
+    P.phase = 'quiz'; P.i = 0; P.picked = null; renderPlayer(); return;
+  }
+  if(P.phase === 'quiz'){
+    if(P.picked == null) return;
+    if(P.i < P.qs.length - 1){ P.i++; P.picked = null; renderPlayer(); return; }
+    finishQuiz();
+  }
+}
+function pAnswer(i){ const q = P.qs[P.i]; P.picked = i; if(i === q.c){ P.score++; sfx('ok'); } else sfx('no'); renderPlayer(); }
+function finishQuiz(){
+  const m = P.m, st = S.mods[m.id] || {}, wasPassed = st.passed, pass = P.score >= 3;
+  S.mods[m.id] = Object.assign({}, st, {best: Math.max(st.best || 0, P.score), passed: wasPassed || pass});
+  P.phase = 'result'; save();
+  addXP(P.score * 10 + (P.score === 5 ? 30 : 0) + (pass && !wasPassed ? 50 : 0), pass && !wasPassed ? 'Modul geschafft' : 'Quiz');
+  if(P.score === 5){ award('perfect'); confetti(); sfx('level'); }
+  quest('learn');
+  const n = MODS.filter(modDone).length; if(n >= 1) award('first'); if(n >= 4) award('half'); if(n >= 8) award('grad');
+  renderPlayer();
+}
+function resultContinue(){ const idx = MODS.indexOf(P.m), nm = MODS[idx + 1]; if(P.score >= 3){ nm ? go('player', {id: nm.id}) : go('sim'); } else go('player', {id: P.m.id}); }
+
+/* ---------- Views: Arcade ---------- */
+function arcade(){
+  main.innerHTML = `<div class="stage"><div style="display:grid;gap:6px"><span class="eyebrow">Arcade</span><h1>Trainieren, bis es automatisch geht</h1><p class="muted">Kurze Runden für zwischendurch. Am iPad mit Magic Keyboard am schnellsten mit den Zahlentasten.</p></div><div class="grid3">${gameCards()}</div></div>`;
+  V.key = k => { if(k === '1'){ go('blitz'); return true; } if(k === '2'){ go('risk'); return true; } if(k === '3'){ go('sim'); return true; } };
+}
+
+/* ---------- Generic timed quiz game (Muster-Blitz, Risiko-Sprint) ---------- */
+function timedGame(cfg){
+  V.nav = false;
+  const gen = GEN;
+  const G = {state: 'intro', score: 0, combo: 0, best: 0, t: cfg.time, q: null, lock: false, n: 0, right: 0};
+  const draw = () => {
+    if(G.state === 'intro'){
+      main.innerHTML = `<div class="stage"><div class="card player" style="display:grid;gap:18px;text-align:center;justify-items:center;padding:36px 22px"><span class="ico" style="width:64px;height:64px;border-radius:18px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)">${cfg.icon}</span><h1>${cfg.title}</h1><p class="muted" style="max-width:52ch">${cfg.intro}</p><p class="num">Rekord: ${S[cfg.bestKey]}</p><div style="display:flex;gap:10px"><button class="btn" data-act="go" data-v="arcade">Zurück <kbd>Esc</kbd></button><button class="btn pri big" data-act="gstart">Start <kbd>Enter</kbd></button></div></div></div>`;
+    } else if(G.state === 'play'){
+      const q = G.q;
+      main.innerHTML = `<div class="stage"><div class="card player" id="gcard" style="display:grid;gap:16px">
+        <div class="gtop"><button class="btn" data-act="go" data-v="arcade" style="min-height:40px;padding:0 12px">✕ <kbd>Esc</kbd></button><div class="bar"><i id="tbar" style="width:${G.t / cfg.time * 100}%;transition:width 1s linear"></i></div>
+        <div class="gstat"><b id="tnum">${Math.ceil(G.t)}</b><small>Sek.</small></div><div class="gstat"><b>${G.score}</b><small>Punkte</small></div><div class="gstat"><b class="combo">×${1 + Math.floor(G.combo / 3)}</b><small>Combo ${G.combo}</small></div></div>
+        ${q.html}
+        <div class="opts g2">${q.opts.map((o, i) => `<button class="opt" data-act="gans" data-v="${i}"><kbd>${i + 1}</kbd><span>${o}</span></button>`).join('')}</div>
+        <div class="why" id="gfb" style="min-height:48px">${G.fb || 'Tippe die Antwort oder drücke 1 bis 4.'}</div></div></div>`;
+    } else {
+      const rec = G.score > G.best;
+      main.innerHTML = `<div class="stage"><div class="card player" style="display:grid;gap:14px;text-align:center;justify-items:center;padding:36px 22px"><span class="eyebrow">${cfg.title} · Zeit vorbei</span><div class="score-big num">${G.score}</div><h2>${rec ? 'Neuer Rekord!' : 'Rekord: ' + G.best}</h2><p class="muted">${G.right} von ${G.n} richtig${G.n ? ' (' + Math.round(G.right / G.n * 100) + ' %)' : ''}</p><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn" data-act="go" data-v="arcade">Arcade</button><button class="btn pri big" data-act="gstart">Nochmal <kbd>Enter</kbd></button></div></div></div>`;
+    }
+  };
+  const next = () => { G.q = cfg.gen(); G.lock = false; draw(); };
+  const start = () => { G.state = 'play'; G.score = 0; G.combo = 0; G.n = 0; G.right = 0; G.t = cfg.time; G.fb = ''; G.best = S[cfg.bestKey]; next(); stopTimers();
+    timers.push(setInterval(() => { G.t -= 1; const b = $('#tbar'), n = $('#tnum'); if(b) b.style.width = Math.max(0, G.t / cfg.time * 100) + '%'; if(n) n.textContent = Math.max(0, Math.ceil(G.t)); if(G.t <= 0) end(); }, 1000)); };
+  const end = () => { stopTimers(); G.state = 'over'; if(G.score > S[cfg.bestKey]){ S[cfg.bestKey] = G.score; save(); }
+    const xp = Math.round(G.score * cfg.xpPer); if(xp > 0) addXP(xp, cfg.title); cfg.onEnd(G.score); if(G.score > G.best && G.best > 0){ confetti(); sfx('level'); } draw(); };
+  const answer = i => { if(G.lock || G.state !== 'play') return; G.lock = true; G.n++; const q = G.q, ok = i === q.c;
+    const btns = main.querySelectorAll('.opt'); btns.forEach((b, j) => { b.disabled = true; if(j === q.c) b.classList.add('right'); else if(j === i) b.classList.add('wrong'); });
+    const card = $('#gcard');
+    if(ok){ G.combo++; G.right++; G.score += 1 + Math.floor((G.combo - 1) / 3); G.fb = '<b style="color:var(--up)">Richtig!</b> ' + q.fb; sfx('ok'); card && card.classList.add('flash-ok'); }
+    else { G.combo = 0; G.t = Math.max(0, G.t - 3); G.fb = '<b style="color:var(--down)">Falsch, −3 Sek.</b> ' + q.fb; sfx('no'); card && card.classList.add('flash-no'); }
+    const fb = $('#gfb'); if(fb) fb.innerHTML = G.fb;
+    setTimeout(() => { if(gen === GEN && G.state === 'play' && G.t > 0) next(); }, ok ? 650 : 1500); };
+  V.act = {gstart: start, gans: d => answer(+d.v)};
+  V.key = k => { if(k === 'Escape'){ go('arcade'); return true; } if(k === 'Enter' && G.state !== 'play'){ start(); return true; } if(G.state === 'play' && /^[1-4]$/.test(k)){ answer(+k - 1); return true; } };
+  draw();
+}
+function blitz(){
+  const keys = Object.keys(PATTERNS);
+  timedGame({title: 'Muster-Blitz', icon: I.bolt, time: 45, bestKey: 'blitzBest', xpPer: 2,
+    intro: 'Das markierte Muster am Ende des Charts: Wie heißt es? Jede richtige Antwort bringt Punkte, ab 3 in Folge zählt sie doppelt. Falsche Antworten kosten 3 Sekunden.',
+    gen(){ const type = pick(keys), g = genPattern(type, rng(Math.random() * 1e9)); const opts = shuffle([type, ...shuffle(keys.filter(k => k !== type)).slice(0, 3)]);
+      return {html: `<div class="pfig">${candleSVG(g.cs, {hl: g.hl, w: 560, h: 240, label: 'Welches Muster?'})}</div>`, opts: opts.map(o => PATTERNS[o].n), c: opts.indexOf(type), fb: PATTERNS[type].n + ': ' + PATTERNS[type].d}; },
+    onEnd(s){ if(s >= 8) quest('blitz'); if(s >= 10) award('blitz10'); if(s >= 20) award('blitz20'); }});
+}
+function risk(){
+  timedGame({title: 'Risiko-Sprint', icon: I.calc, time: 60, bestKey: 'riskBest', xpPer: 2,
+    intro: 'Rechne schnell: Wie viele Aktien bei 1 % Risiko? Welches CRV? Welche Trefferquote brauchst du? 60 Sekunden, falsche Antworten kosten 3 Sekunden.',
+    gen(){
+      const t = pick(['size', 'size', 'crv', 'be', 'eur']);
+      const uniq = (c, ds, f) => { const set = [c]; ds.forEach(d => { if(d > 0 && !set.includes(d) && set.length < 4) set.push(d); }); let k = 1; while(set.length < 4){ const d = c + k * (k % 2 ? 1 : -1) * Math.max(1, Math.round(c * .15)); if(d > 0 && !set.includes(d)) set.push(d); k++; } const o = shuffle(set); return {opts: o.map(f), c: o.indexOf(c)}; };
+      if(t === 'size'){ const acct = pick([5000, 10000, 20000, 25000, 30000, 50000]), rp = pick([.5, 1, 1, 2]), entry = pick([12, 24.5, 48, 75, 103, 150, 212]), sd = pick([.25, .5, 1, 1.5, 2, 2.5]); const riskE = acct * rp / 100, c = Math.floor(riskE / sd);
+        const r = uniq(c, [c * 2, Math.floor(c / 2), c * 10, Math.floor(riskE / entry)], v => de(v) + ' Stück');
+        return Object.assign(r, {html: `<p class="qtext">Konto <b class="num">${eur(acct)}</b>, Risiko <b class="num">${de(rp, rp % 1 ? 1 : 0)} %</b>. Long bei <b class="num">${de(entry, 2)} €</b>, Stop bei <b class="num">${de(entry - sd, 2)} €</b>. Wie viele Aktien kaufst du?</p>`, fb: `${eur(riskE)} Risiko ÷ ${de(sd, 2)} € Abstand = ${de(c)} Stück.`}); }
+      if(t === 'crv'){ const e = pick([20, 45, 80, 120, 64.5]), d = pick([.5, 1, 2]), k = pick([1, 1.5, 2, 3, 4]); const ks = shuffle([k, ...shuffle([1, 1.5, 2, 2.5, 3, 4, 5].filter(x => x !== k)).slice(0, 3)]);
+        return {html: `<p class="qtext">Entry <b class="num">${de(e, 2)}</b>, Stop <b class="num">${de(e - d, 2)}</b>, Ziel <b class="num">${de(e + d * k, 2)}</b>. Welches Chance-Risiko-Verhältnis?</p>`, opts: ks.map(x => de(x, x % 1 ? 1 : 0) + ' : 1'), c: ks.indexOf(k), fb: `Chance ${de(d * k, 2)} ÷ Risiko ${de(d, 2)} = ${de(k, k % 1 ? 1 : 0)}.`}; }
+      if(t === 'be'){ const k = pick([1, 2, 3, 4]), c = Math.round(100 / (1 + k)); const r = uniq(c, [Math.round(100 / k), 50, Math.round(100 * k / (1 + k)), c + 10], v => v + ' %');
+        return Object.assign(r, {html: `<p class="qtext">Deine Trades haben ein CRV von <b class="num">${k} : 1</b>. Welche Trefferquote brauchst du mindestens, um nicht zu verlieren?</p>`, fb: `1 ÷ (1 + ${k}) ≈ ${c} %.`}); }
+      const acct = pick([8000, 12000, 15000, 40000, 60000]), rp = pick([.5, 1, 2]), c = acct * rp / 100; const r = uniq(c, [c * 10, c / 2, c * 2], v => eur(v));
+      return Object.assign(r, {html: `<p class="qtext">Konto <b class="num">${eur(acct)}</b>, Regel: <b class="num">${de(rp, rp % 1 ? 1 : 0)} %</b> Risiko pro Trade. Wie viel Euro darfst du maximal verlieren?</p>`, fb: `${eur(acct)} × ${de(rp, 1)} % = ${eur(c)}.`});
+    },
+    onEnd(s){ if(s >= 10) award('risk10'); }});
+}
+
+/* ---------- Simulator ---------- */
+let SIM = null;
+const REGIME = {trendUp: 'Trendtag aufwärts', trendDown: 'Trendtag abwärts', range: 'Seitwärtstag (Range)', reversalUp: 'Umkehrtag: erst runter, dann rauf', reversalDown: 'Umkehrtag: erst rauf, dann runter'};
+function genDay(seed){
+  const r = rng(seed), N = 78, regime = pick(Object.keys(REGIME), r);
+  const open = Math.round((25 + r() * 175) * 100) / 100, sd = open * .0021;
+  let p = open; const cs = [];
+  for(let i = 0; i < N; i++){
+    const m = 1 + 1.3 * Math.exp(-i / 7) + .5 * Math.max(0, (i - 64) / 14);
+    let d = 0;
+    if(regime === 'trendUp') d = sd * .3; else if(regime === 'trendDown') d = -sd * .3;
+    else if(regime === 'range') d = -(p - open) * .09;
+    else if(regime === 'reversalUp') d = i < 28 ? -sd * .35 : sd * .38; else d = i < 28 ? sd * .35 : -sd * .38;
+    const o = p; let h = o, l = o, c = o;
+    for(let k = 0; k < 10; k++){ c += d / 10 + gauss(r) * sd * m / Math.sqrt(10); h = Math.max(h, c); l = Math.min(l, c); }
+    p = c;
+    cs.push({o, h, l, c, v: Math.round((800 + r() * 700) * m * (1 + Math.abs(c - o) / sd * .35)) * 10});
+  }
+  let cpv = 0, cv = 0, ema = cs[0].c, ag = 0, al = 0;
+  cs.forEach((k, i) => {
+    const tp = (k.h + k.l + k.c) / 3; cpv += tp * k.v; cv += k.v; k.vwap = cpv / cv;
+    ema = i ? k.c * .2 + ema * .8 : k.c; k.ema = ema;
+    k.tr = i ? Math.max(k.h - k.l, Math.abs(k.h - cs[i - 1].c), Math.abs(k.l - cs[i - 1].c)) : k.h - k.l;
+    const s = cs.slice(Math.max(0, i - 13), i + 1); k.atr = s.reduce((a, b) => a + b.tr, 0) / s.length;
+    if(i){ const ch = k.c - cs[i - 1].c, g = Math.max(ch, 0), lo = Math.max(-ch, 0); if(i <= 14){ ag += g / 14; al += lo / 14; } else { ag = (ag * 13 + g) / 14; al = (al * 13 + lo) / 14; } }
+    k.rsi = i < 14 ? 50 : (al === 0 ? 100 : 100 - 100 / (1 + ag / al));
+    const vs = cs.slice(Math.max(0, i - 19), i + 1); k.vavg = vs.reduce((a, b) => a + b.v, 0) / vs.length;
+  });
+  const first = cs.slice(0, 6);
+  return {cs, regime, N, orH: Math.max(...first.map(k => k.h)), orL: Math.min(...first.map(k => k.l))};
+}
+function newSim(){ SIM = {day: genDay(Math.floor(Math.random() * 1e9)), cur: 5, eq: 25000, start: 25000, riskPct: 1, pos: null, trades: [], notes: [], disc: 100, lastLoss: -99, playing: false, over: false, no: S.simDays + 1}; }
+const fee = sh => Math.max(1, sh * .005);
+function note(pts, txt){ SIM.disc = Math.max(0, SIM.disc - pts); SIM.notes.push({pts, txt, i: SIM.cur}); toast('Disziplin −' + pts + ': ' + txt); }
+function ctx(){
+  const d = SIM.day, k = d.cs[SIM.cur], prev = d.cs[Math.max(0, SIM.cur - 3)];
+  return {k, aboveV: k.c > k.vwap, emaUp: k.ema > prev.ema, orUp: k.c > d.orH, orDn: k.c < d.orL, rsi: k.rsi, spike: k.v > k.vavg * 1.6};
+}
+function simEnter(side){
+  if(!SIM || SIM.over) return;
+  if(SIM.pos){ toast('Du hast schon eine Position. Erst schließen mit X.'); return; }
+  const k = SIM.day.cs[SIM.cur], c = ctx();
+  const dist = Math.max(k.atr * 1.1, k.c * .0012), entry = k.c, riskE = SIM.eq * SIM.riskPct / 100;
+  let sh = Math.floor(riskE / dist); sh = Math.min(sh, Math.floor(SIM.eq * 4 / entry));
+  if(sh < 1){ toast('Zu wenig Kapital für diesen Trade.'); return; }
+  const n = SIM.trades.length + 1;
+  if(SIM.riskPct > 1) note(10, 'Mehr als 1 % riskiert');
+  if(side > 0 && !c.aboveV && !c.emaUp) note(10, 'Long gegen den Trend (unter VWAP, EMA fällt)');
+  if(side < 0 && c.aboveV && c.emaUp) note(10, 'Short gegen den Trend (über VWAP, EMA steigt)');
+  if(SIM.cur - SIM.lastLoss <= 2) note(15, 'Revenge-Trade direkt nach Verlust');
+  if(n >= 5) note(10, 'Overtrading: Trade Nr. ' + n);
+  SIM.eq -= fee(sh);
+  SIM.pos = {side, entry, stop: entry - side * dist, target: entry + side * 2 * dist, sh, riskE: dist * sh, i: SIM.cur, be: false};
+  sfx('tick'); simUpdate();
+}
+function simExit(price, why){
+  const p = SIM.pos; if(!p) return;
+  const pnl = (price - p.entry) * p.side * p.sh - fee(p.sh), R = (price - p.entry) * p.side * p.sh / p.riskE;
+  SIM.eq += (price - p.entry) * p.side * p.sh - fee(p.sh);
+  SIM.trades.push({side: p.side, entry: p.entry, exit: price, R, pnl, i: p.i, j: SIM.cur, why});
+  if(pnl < 0){ SIM.lastLoss = SIM.cur; sfx('loss'); } else sfx('win');
+  toast((p.side > 0 ? 'Long' : 'Short') + ' geschlossen (' + why + '): ' + (R >= 0 ? '+' : '') + de(R, 2) + 'R');
+  SIM.pos = null;
+}
+function simClose(){
+  if(!SIM || !SIM.pos || SIM.over) return;
+  const k = SIM.day.cs[SIM.cur], p = SIM.pos, R = (k.c - p.entry) * p.side * p.sh / p.riskE;
+  if(R > 0 && R < .5) note(5, 'Gewinner sehr früh geschlossen');
+  simExit(k.c, 'manuell'); simUpdate();
+}
+function simBE(){
+  if(!SIM || !SIM.pos || SIM.over) return; const p = SIM.pos, k = SIM.day.cs[SIM.cur];
+  if(p.be){ toast('Stop liegt schon auf Einstand.'); return; }
+  if((k.c - p.entry) * p.side < Math.abs(p.entry - p.stop)){ toast('Stop auf Einstand ist erst ab +1R sinnvoll.'); return; }
+  p.stop = p.entry; p.be = true; toast('Stop auf Einstand. Jetzt kannst du nur noch Gebühren verlieren.'); simUpdate();
+}
+function simStep(){
+  if(!SIM || SIM.over) return;
+  SIM.cur++;
+  const k = SIM.day.cs[SIM.cur], p = SIM.pos;
+  if(p){
+    if(p.side > 0){ if(k.o <= p.stop) simExit(k.o, 'Stop (Gap)'); else if(k.l <= p.stop) simExit(p.stop, p.be ? 'Einstand' : 'Stop'); else if(k.h >= p.target) simExit(p.target, 'Ziel'); }
+    else { if(k.o >= p.stop) simExit(k.o, 'Stop (Gap)'); else if(k.h >= p.stop) simExit(p.stop, p.be ? 'Einstand' : 'Stop'); else if(k.l <= p.target) simExit(p.target, 'Ziel'); }
+  }
+  if(SIM.cur >= SIM.day.N - 1){ if(SIM.pos) simExit(k.c, 'Handelsschluss'); simEnd(); }
+  simUpdate();
+}
+function simPlay(){
+  if(!SIM || SIM.over) return;
+  SIM.playing = !SIM.playing; timers.forEach(clearInterval); timers = [];
+  if(SIM.playing) timers.push(setInterval(() => { if(!SIM.playing || SIM.over){ timers.forEach(clearInterval); timers = []; return; } simStep(); }, 650));
+  simUpdate();
+}
+function simEnd(){
+  SIM.over = true; SIM.playing = false; timers.forEach(clearInterval); timers = [];
+  const tR = SIM.trades.reduce((a, t) => a + t.R, 0);
+  if(!SIM.trades.length) SIM.notes.push({pts: 0, txt: 'Kein Trade heute. Das ist okay, wenn es kein Setup gab.'});
+  S.simDays++; S.simTotalR += tR; S.simBestDisc = Math.max(S.simBestDisc, SIM.trades.length ? SIM.disc : 0); save();
+  addXP(20 + Math.round(SIM.disc / 2) + (tR > 0 ? 10 : 0), 'Sim-Tag');
+  award('sim1'); if(S.simDays >= 5) award('green5'); if(SIM.disc === 100 && SIM.trades.length) award('disc100');
+  if(SIM.disc >= 80) quest('sim');
+  if(SIM.disc >= 90 && SIM.trades.length) confetti();
+}
+function simView(){
+  V.nav = false;
+  if(!SIM || SIM.over) newSim();
+  main.innerHTML = `<div class="sim">
+    <section class="card sim-chart">
+      <div class="navrow"><div><span class="eyebrow">Simulator · Tag ${SIM.no}</span><h3 id="simTitle">Simulierte Aktie</h3></div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>VWAP</span><span><i style="background:var(--info)"></i>EMA 9</span><span><i style="background:var(--muted);opacity:.5"></i>Opening Range</span></div></div>
+      <div class="cwrap"><canvas id="simc"></canvas></div>
+    </section>
+    <aside class="card sim-side" id="simside"></aside></div>`;
+  V.key = k => {
+    const kk = k.toLowerCase();
+    if(k === 'Escape'){ go('home'); return true; }
+    if(SIM.over){ if(k === 'Enter' || kk === 'n'){ newSim(); simView(); return true; } return; }
+    if(k === ' ' || k === 'ArrowRight'){ simStep(); return true; }
+    if(kk === 'p'){ simPlay(); return true; }
+    if(kk === 'b'){ simEnter(1); return true; }
+    if(kk === 's'){ simEnter(-1); return true; }
+    if(kk === 'x'){ simClose(); return true; }
+    if(kk === 'e'){ simBE(); return true; }
+    if(kk === 'r'){ SIM.riskPct = SIM.riskPct === .5 ? 1 : SIM.riskPct === 1 ? 2 : .5; simUpdate(); return true; }
+  };
+  simUpdate();
+  if(!S.simDays && !SIM.trades.length) setTimeout(() => toast('Tipp: Leertaste = nächste Kerze, B = Long, S = Short'), 400);
+}
+function simUpdate(){
+  const side = $('#simside'); if(!side || !SIM) return;
+  const d = SIM.day, k = d.cs[SIM.cur], p = SIM.pos, c = ctx();
+  const time = i => { const m = 9 * 60 + 30 + (i + 1) * 5; return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'); };
+  const dayPnl = SIM.eq - SIM.start + (p ? (k.c - p.entry) * p.side * p.sh : 0);
+  const tR = SIM.trades.reduce((a, t) => a + t.R, 0);
+  let coachTxt;
+  if(c.aboveV && c.emaUp && c.orUp) coachTxt = 'Long-Kontext: Kurs über VWAP und Opening Range, EMA steigt. Besser auf einen Rücksetzer zur EMA warten als hinterherspringen.';
+  else if(!c.aboveV && !c.emaUp && c.orDn) coachTxt = 'Short-Kontext: Kurs unter VWAP und Opening Range, EMA fällt. Auf einen Rücklauf zur EMA oder zum VWAP warten.';
+  else if(SIM.cur < 7) coachTxt = 'Die Opening Range (erste 30 Min.) steht. Ein Schlusskurs darüber oder darunter ist ein klassischer Trigger.';
+  else coachTxt = 'Gemischte Signale. Kein Trade ist auch eine Position.';
+  if(c.rsi > 75) coachTxt += ' RSI sehr hoch: Long jetzt wäre spät.'; else if(c.rsi < 25) coachTxt += ' RSI sehr tief: Short jetzt wäre spät.';
+  let html = `<div class="navrow"><div><span class="eyebrow">Uhrzeit</span><div class="num" style="font-size:26px;font-weight:700">${time(SIM.cur)}</div></div><div style="text-align:right"><span class="eyebrow">Kurs</span><div class="num" style="font-size:26px;font-weight:700">${de(k.c, 2)}</div></div></div>
+   <dl class="kv"><dt>Konto</dt><dd>${eur(SIM.eq + (p ? (k.c - p.entry) * p.side * p.sh : 0))}</dd><dt>Heute</dt><dd style="color:var(${dayPnl >= 0 ? '--up' : '--down'})">${dayPnl >= 0 ? '+' : ''}${eur(dayPnl)}</dd><dt>Ergebnis in R</dt><dd>${tR >= 0 ? '+' : ''}${de(tR, 2)}R</dd><dt>Disziplin</dt><dd style="color:var(${SIM.disc >= 80 ? '--up' : SIM.disc >= 50 ? '--accent' : '--down'})">${SIM.disc}/100</dd></dl>`;
+  if(SIM.over){
+    const wins = SIM.trades.filter(t => t.R > 0).length;
+    html += `<div class="coach" style="background:var(--accent-soft)"><h3>Handelsschluss</h3><p>Das war ein <b>${REGIME[d.regime]}</b>.</p><dl class="kv"><dt>Trades</dt><dd>${SIM.trades.length}</dd><dt>Trefferquote</dt><dd>${SIM.trades.length ? Math.round(wins / SIM.trades.length * 100) + ' %' : '–'}</dd><dt>Gesamt</dt><dd>${tR >= 0 ? '+' : ''}${de(tR, 2)}R</dd></dl>
+      <p style="font-size:13px">${SIM.notes.length ? SIM.notes.map(n => (n.pts ? '−' + n.pts + ' · ' : '') + n.txt).join('<br>') : 'Keine Regelverstöße. Stark!'}</p><p style="font-size:13px" class="muted">Bewertet wird die Disziplin. Ein Verlusttag mit sauberen Regeln ist besser als ein Glückstag ohne Plan.</p></div>
+      <button class="btn pri big" data-act="simnew">Nächster Tag <kbd>Enter</kbd></button><button class="btn" data-act="go" data-v="home">Fertig <kbd>Esc</kbd></button>`;
+  } else {
+    html += `<div><span class="eyebrow">Risiko pro Trade <kbd>R</kbd></span><div class="seg" style="margin-top:6px">${[.5, 1, 2].map(v => `<button class="${SIM.riskPct === v ? 'on' : ''}" data-act="simrisk" data-v="${v}">${de(v, v % 1 ? 1 : 0)} %</button>`).join('')}</div></div>`;
+    if(p){ const R = (k.c - p.entry) * p.side * p.sh / p.riskE;
+      html += `<div class="pos ${p.side > 0 ? 'long' : 'short'}"><div class="navrow"><b>${p.side > 0 ? 'Long' : 'Short'} · ${de(p.sh)} Stück</b><b class="num" style="color:var(${R >= 0 ? '--up' : '--down'})">${R >= 0 ? '+' : ''}${de(R, 2)}R</b></div><dl class="kv" style="margin-top:6px"><dt>Entry</dt><dd>${de(p.entry, 2)}</dd><dt>Stop${p.be ? ' (Einstand)' : ''}</dt><dd style="color:var(--down)">${de(p.stop, 2)}</dd><dt>Ziel (2R)</dt><dd style="color:var(--up)">${de(p.target, 2)}</dd><dt>Risiko</dt><dd>${eur(p.riskE)}</dd></dl></div>`;
+    }
+    html += `<div class="tbtns"><button class="btn up" data-act="simlong" ${p ? 'disabled' : ''}>Long <kbd>B</kbd></button><button class="btn down" data-act="simshort" ${p ? 'disabled' : ''}>Short <kbd>S</kbd></button>
+      <button class="btn" data-act="simclose" ${p ? '' : 'disabled'}>Schließen <kbd>X</kbd></button><button class="btn" data-act="simbe" ${p ? '' : 'disabled'}>Stop → Einstand <kbd>E</kbd></button>
+      <button class="btn ink" data-act="simstep">Nächste Kerze <kbd>␣</kbd></button><button class="btn" data-act="simplay">${SIM.playing ? 'Pause' : 'Abspielen'} <kbd>P</kbd></button></div>
+      <div class="coach"><b>Coach</b><div class="chips"><span class="chip ${c.aboveV ? 'up' : 'down'}">${c.aboveV ? 'über' : 'unter'} VWAP</span><span class="chip ${c.emaUp ? 'up' : 'down'}">EMA ${c.emaUp ? 'steigt' : 'fällt'}</span><span class="chip ${c.orUp ? 'up' : c.orDn ? 'down' : ''}">${c.orUp ? 'über' : c.orDn ? 'unter' : 'in'} Opening Range</span><span class="chip ${c.rsi > 70 || c.rsi < 30 ? 'acc' : ''}">RSI ${Math.round(c.rsi)}</span>${c.spike ? '<span class="chip acc">Volumen-Spike</span>' : ''}</div><p>${coachTxt}</p></div>
+      <p class="muted" style="font-size:12px">Stop automatisch bei ca. 1,1 × ATR, Ziel bei 2R. Stückzahl aus deinem Risiko berechnet. Gebühr 0,005 € je Aktie, mind. 1 €.</p>`;
+  }
+  if(SIM.trades.length) html += `<div><span class="eyebrow">Trades</span><div class="tlist" style="margin-top:6px">${SIM.trades.map(t => `<div><span>${t.side > 0 ? 'Long ' : 'Short'} ${time(t.i)}→${time(t.j)}</span><span style="color:var(${t.R >= 0 ? '--up' : '--down'})">${t.R >= 0 ? '+' : ''}${de(t.R, 2)}R</span></div>`).join('')}</div></div>`;
+  side.innerHTML = html;
+  drawSim();
+}
+function drawSim(){
+  const cv = $('#simc'); if(!cv || !SIM) return;
+  const W = cv.clientWidth, H = cv.clientHeight; if(!W || !H) return;
+  cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio;
+  const x = cv.getContext('2d'); x.scale(devicePixelRatio, devicePixelRatio);
+  const d = SIM.day, vis = d.cs.slice(0, SIM.cur + 1), p = SIM.pos;
+  const col = {up: css('--up'), down: css('--down'), ink: css('--ink'), muted: css('--muted'), line: css('--line'), acc: css('--accent'), info: css('--info')};
+  const axis = 62, volH = H * .17, top = 10, bot = H - volH - 26, pw = W - axis;
+  let lo = Math.min(...vis.map(k => Math.min(k.l, k.vwap))), hi = Math.max(...vis.map(k => Math.max(k.h, k.vwap)));
+  if(p){ lo = Math.min(lo, p.stop, p.target); hi = Math.max(hi, p.stop, p.target); }
+  const padv = (hi - lo) * .08 || 1; lo -= padv; hi += padv;
+  const Y = v => top + (hi - v) / (hi - lo) * (bot - top), st = pw / d.N, X = i => i * st + st / 2, bw = Math.max(2, st * .64);
+  x.font = '600 11px "JetBrains Mono", monospace'; x.textBaseline = 'middle';
+  const stepV = niceStep((hi - lo) / 5);
+  for(let v = Math.ceil(lo / stepV) * stepV; v <= hi; v += stepV){ x.strokeStyle = col.line; x.lineWidth = 1; x.beginPath(); x.moveTo(0, Y(v)); x.lineTo(pw, Y(v)); x.stroke(); x.fillStyle = col.muted; x.fillText(de(v, 2), pw + 6, Y(v)); }
+  x.textBaseline = 'alphabetic';
+  for(let i = 5; i < d.N; i += 12){ const m = 9 * 60 + 30 + (i + 1) * 5; x.fillStyle = col.muted; x.fillText(Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'), X(i) - 16, H - 6); }
+  // opening range
+  x.fillStyle = col.muted; x.globalAlpha = .08; x.fillRect(0, Y(d.orH), X(5) + st / 2, Y(d.orL) - Y(d.orH)); x.globalAlpha = .5;
+  x.setLineDash([4, 4]); x.strokeStyle = col.muted; [d.orH, d.orL].forEach(v => { x.beginPath(); x.moveTo(0, Y(v)); x.lineTo(pw, Y(v)); x.stroke(); }); x.setLineDash([]); x.globalAlpha = 1;
+  // position zones
+  if(p){ const x0 = X(p.i); x.globalAlpha = .12; x.fillStyle = col.up; x.fillRect(x0, Math.min(Y(p.entry), Y(p.target)), pw - x0, Math.abs(Y(p.target) - Y(p.entry))); x.fillStyle = col.down; x.fillRect(x0, Math.min(Y(p.entry), Y(p.stop)), pw - x0, Math.abs(Y(p.stop) - Y(p.entry))); x.globalAlpha = 1;
+    [[p.entry, col.ink, 'Entry'], [p.stop, col.down, 'Stop'], [p.target, col.up, 'Ziel']].forEach(([v, c, t]) => { x.strokeStyle = c; x.lineWidth = 1.5; x.beginPath(); x.moveTo(x0, Y(v)); x.lineTo(pw, Y(v)); x.stroke(); x.fillStyle = c; x.fillRect(pw, Y(v) - 9, axis, 18); x.fillStyle = css('--surface'); x.textBaseline = 'middle'; x.fillText(de(v, 2), pw + 6, Y(v)); x.textBaseline = 'alphabetic'; }); }
+  // volume
+  const vmax = Math.max(...d.cs.slice(0, Math.max(SIM.cur + 1, 20)).map(k => k.v));
+  vis.forEach((k, i) => { x.fillStyle = k.c >= k.o ? col.up : col.down; x.globalAlpha = .35; const vh = k.v / vmax * (volH - 6); x.fillRect(X(i) - bw / 2, H - 22 - vh, bw, vh); }); x.globalAlpha = 1;
+  // candles
+  vis.forEach((k, i) => { const c = k.c >= k.o ? col.up : col.down; x.strokeStyle = x.fillStyle = c; x.lineWidth = 1.2; x.beginPath(); x.moveTo(X(i), Y(k.h)); x.lineTo(X(i), Y(k.l)); x.stroke(); x.fillRect(X(i) - bw / 2, Y(Math.max(k.o, k.c)), bw, Math.max(1.2, Math.abs(Y(k.o) - Y(k.c)))); });
+  // overlays
+  [['vwap', col.acc, 2.2], ['ema', col.info, 1.6]].forEach(([key, c, lw]) => { x.strokeStyle = c; x.lineWidth = lw; x.beginPath(); vis.forEach((k, i) => i ? x.lineTo(X(i), Y(k[key])) : x.moveTo(X(i), Y(k[key]))); x.stroke(); });
+  // trade markers
+  const tri = (i, v, up, c) => { x.fillStyle = c; x.beginPath(); const yy = Y(v) + (up ? 10 : -10); x.moveTo(X(i), yy + (up ? -6 : 6)); x.lineTo(X(i) - 6, yy + (up ? 5 : -5)); x.lineTo(X(i) + 6, yy + (up ? 5 : -5)); x.fill(); };
+  SIM.trades.forEach(t => { tri(t.i, t.entry, t.side > 0, t.side > 0 ? col.up : col.down); x.fillStyle = col.ink; x.beginPath(); x.arc(X(t.j), Y(t.exit), 4, 0, 7); x.fill(); });
+  if(p) tri(p.i, p.entry, p.side > 0, p.side > 0 ? col.up : col.down);
+  // last price tag
+  const lk = vis[vis.length - 1]; x.fillStyle = col.ink; x.fillRect(pw, Y(lk.c) - 10, axis, 20); x.fillStyle = css('--surface'); x.textBaseline = 'middle'; x.font = '700 12px "JetBrains Mono", monospace'; x.fillText(de(lk.c, 2), pw + 6, Y(lk.c));
+}
+function niceStep(raw){ const p = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / p; return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * p; }
+
+/* ---------- Views: Profile ---------- */
+function profile(){
+  const l = levelOf(S.xp);
+  main.innerHTML = `<div class="stage"><div style="display:grid;gap:6px"><span class="eyebrow">Profil</span><h1>Level ${l + 1} · ${TITLES[l]}</h1></div>
+   <section class="bigstats"><div><span class="eyebrow">XP</span><b>${de(S.xp)}</b></div><div><span class="eyebrow">Serie</span><b>${S.streak} ${S.streak === 1 ? 'Tag' : 'Tage'}</b></div><div><span class="eyebrow">Module</span><b>${MODS.filter(modDone).length}/8</b></div><div><span class="eyebrow">Sim-Ergebnis</span><b>${S.simTotalR >= 0 ? '+' : ''}${de(S.simTotalR, 1)}R</b></div></section>
+   <section class="card" style="display:grid;gap:14px"><h3>Abzeichen <span class="muted num">${Object.keys(S.badges).length}/${BADGES.length}</span></h3><div class="badges">${BADGES.map(b => `<div class="badge ${S.badges[b.id] ? 'got' : ''}"><b>${b.n}</b><small>${b.d}</small></div>`).join('')}</div></section>
+   <section class="card" style="display:grid;gap:14px"><h3>Einstellungen</h3>
+     <div class="navrow"><span>Soundeffekte</span><button class="btn" data-act="sound">${S.sound ? 'An' : 'Aus'}</button></div>
+     <div class="navrow"><span>Tastenkürzel anzeigen</span><button class="btn" data-act="help">Öffnen <kbd>?</kbd></button></div>
+     <div class="navrow"><span>Fortschritt löschen <span class="muted">(XP, Module, Rekorde)</span></span><span id="resetwrap"><button class="btn" data-act="reset1">Zurücksetzen</button></span></div>
+   </section><p class="disclaimer">Dein Fortschritt liegt nur in diesem Browser. Lernen ersetzt keine Anlageberatung.</p></div>`;
+}
+
+/* ---------- Help overlay ---------- */
+function toggleHelp(){
+  helpOpen = !helpOpen;
+  $('#modal').innerHTML = helpOpen ? `<div class="modal" data-act="help"><div class="card" style="display:grid;gap:16px" onclick="event.stopPropagation()"><div class="navrow"><h2>Tastenkürzel</h2><button class="btn" data-act="help">Schließen <kbd>Esc</kbd></button></div>
+   <div class="keys"><span class="eyebrow">Navigation</span><span></span><span><kbd>H</kbd> <kbd>L</kbd> <kbd>A</kbd> <kbd>T</kbd> <kbd>P</kbd></span><span>Start, Lernpfad, Arcade, Simulator, Profil</span><span><kbd>Enter</kbd></span><span>Hauptaktion (weiterlernen, starten)</span><span><kbd>Esc</kbd></span><span>Zurück</span>
+   <span class="eyebrow">Lektionen &amp; Quiz</span><span></span><span><kbd>←</kbd> <kbd>→</kbd></span><span>Karte zurück / weiter</span><span><kbd>1</kbd>–<kbd>4</kbd></span><span>Antwort wählen</span>
+   <span class="eyebrow">Simulator</span><span></span><span><kbd>Leertaste</kbd></span><span>Nächste Kerze</span><span><kbd>P</kbd></span><span>Abspielen / Pause</span><span><kbd>B</kbd> / <kbd>S</kbd></span><span>Long / Short eröffnen</span><span><kbd>X</kbd></span><span>Position schließen</span><span><kbd>E</kbd></span><span>Stop auf Einstand (ab +1R)</span><span><kbd>R</kbd></span><span>Risiko 0,5 / 1 / 2 % wechseln</span></div></div></div>` : '';
+}
+
+/* ---------- Events ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const a = b.dataset.act, v = b.dataset.v;
+  if(V.act && V.act[a]){ V.act[a](b.dataset); return; }
+  switch(a){
+    case 'go': if(helpOpen) toggleHelp(); go(v); break;
+    case 'learn': go('player', {id: v}); break;
+    case 'quiz': go('player', {id: v, quiz: true}); break;
+    case 'pnext': pNext(); break;
+    case 'pprev': pPrev(); break;
+    case 'pans': pAnswer(+v); break;
+    case 'simlong': simEnter(1); break;
+    case 'simshort': simEnter(-1); break;
+    case 'simclose': simClose(); break;
+    case 'simbe': simBE(); break;
+    case 'simstep': simStep(); break;
+    case 'simplay': simPlay(); break;
+    case 'simrisk': SIM.riskPct = +v; simUpdate(); break;
+    case 'simnew': newSim(); simView(); break;
+    case 'sound': S.sound = !S.sound; save(); profile(); if(S.sound) sfx('ok'); break;
+    case 'help': toggleHelp(); break;
+    case 'reset1': $('#resetwrap').innerHTML = '<button class="btn down" data-act="reset2">Wirklich alles löschen</button> <button class="btn" data-act="go" data-v="profile">Abbrechen</button>'; break;
+    case 'reset2': S = JSON.parse(JSON.stringify(DEF)); save(); SIM = null; toast('Fortschritt gelöscht'); go('home'); break;
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.metaKey || e.ctrlKey || e.altKey || e.repeat && e.key !== ' ' && e.key !== 'ArrowRight') return;
+  const k = e.key;
+  if(k === '?' || (k === '/' && e.shiftKey)){ toggleHelp(); e.preventDefault(); return; }
+  if(helpOpen){ if(k === 'Escape' || k === 'Enter'){ toggleHelp(); e.preventDefault(); } return; }
+  if(V.key && V.key(k, e)){ e.preventDefault(); return; }
+  if(V.nav){ const n = NAV.find(x => x[2].toLowerCase() === k.toLowerCase()); if(n){ go(n[0]); e.preventDefault(); return; } }
+  if(k === 'Escape' && V.name !== 'home'){ go('home'); e.preventDefault(); }
+});
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if(V.name === 'sim') drawSim(); if(V.name === 'home') drawHero(); }, 120); });
+try { if('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|anthropic/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch(e){}
+
+go('home');
+</script>
+</body>
+</html>

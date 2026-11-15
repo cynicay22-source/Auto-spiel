@@ -1,0 +1,16 @@
+{
+  "name": "Chartschule",
+  "short_name": "Chartschule",
+  "description": "Day Trading von null lernen: Lektionen, Quiz, Arcade und Simulator.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1322",
+  "theme_color": "#111d33",
+  "lang": "de",
+  "icons": [
+    {"src": "icon.svg", "sizes": "any", "type": "image/svg+xml"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-180.png", "sizes": "180x180", "type": "image/png"}
+  ]
+}
