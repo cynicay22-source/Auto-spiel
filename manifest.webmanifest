@@ -1,6 +1,6 @@
 {
-  "name": "Chartschule",
-  "short_name": "Chartschule",
+  "name": "ChartsTrade",
+  "short_name": "ChartsTrade",
   "description": "Day Trading von null lernen: Lektionen, Quiz, Arcade und Simulator.",
   "start_url": "./",
   "display": "standalone",

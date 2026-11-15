@@ -1,4 +1,4 @@
-# Chartschule
+# ChartsTrade
 
 Day Trading von null lernen, als Web-App fürs iPad (optimiert für iPad Pro mit Magic Keyboard, läuft aber überall).
 
@@ -9,7 +9,8 @@ Day Trading von null lernen, als Web-App fürs iPad (optimiert für iPad Pro mit
   - *Muster-Blitz*: 45 Sekunden Kerzenmuster erkennen, mit Combos.
   - *Risiko-Sprint*: Positionsgröße, CRV und Break-even-Trefferquote im Kopf rechnen.
 - **Trading-Simulator**: Ein simulierter Handelstag (9:30–16:00, 5-Minuten-Kerzen) mit VWAP, EMA 9, Opening Range und Coach-Hinweisen. Bewertet wird die Disziplin, nicht das Glück.
-- **Motivation**: XP, Level, Tagesserie, Tagesquests, Abzeichen, Sounds und Konfetti.
+- **Serie (Streak)**: Schaffe dein Tagesziel (15, 30, 60 oder 100 XP) und deine Serie wächst. Alle 7 Tage gibt es einen Serienschutz (max. 2), der einen verpassten Tag rettet. Meilensteine bei 3, 7, 14, 30, 50, 100, 200 und 365 Tagen. Wochenansicht auf der Startseite, 5-Wochen-Kalender im Profil.
+- **Motivation**: XP, Level, Tagesquests, Abzeichen, Sounds und Konfetti.
 
 ## Tastenkürzel (Magic Keyboard)
 
@@ -27,9 +28,11 @@ Day Trading von null lernen, als Web-App fürs iPad (optimiert für iPad Pro mit
 
 ## Aufs iPad bringen
 
-1. In den Repo-Einstellungen **GitHub Pages** für diesen Branch aktivieren (Ordner `/`).
-2. Die Pages-URL in Safari öffnen → Teilen → **Zum Home-Bildschirm**.
-3. Die App startet dann im Vollbild und funktioniert auch offline.
+1. Auf github.com im Repo: **Settings → Pages**.
+2. Bei *Source* „Deploy from a branch“ wählen, Branch `claude/adoring-fermat-r9yju3` und Ordner `/ (root)`, dann **Save**.
+3. Nach 1–2 Minuten ist die App unter `https://cynicay22-source.github.io/Auto-spiel/` erreichbar.
+4. Diese Adresse in **Safari** auf dem iPad öffnen → Teilen-Symbol → **Zum Home-Bildschirm** → Hinzufügen.
+5. ChartsTrade startet dann im Vollbild wie eine normale App und funktioniert auch offline.
 
 ## Entwicklung
 

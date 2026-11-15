@@ -1,8 +1,8 @@
-<title>Chartschule</title>
+<title>ChartsTrade</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Chartschule">
+<meta name="apple-mobile-web-app-title" content="ChartsTrade">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -108,6 +108,29 @@ main{min-height:0;overflow-y:auto;overflow-x:hidden;border-radius:20px;-webkit-o
 .game .ico svg{width:26px;height:26px}
 .game .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
 .tip{border-left:0;background:var(--accent-soft);color:var(--ink)}
+.streak{display:grid;gap:14px}
+.streak-top{display:flex;align-items:center;gap:16px}
+.streak-num{font-family:var(--f-display);font-size:52px;font-weight:800;line-height:1}
+.flame{flex:none;transform-origin:50% 90%}
+.flame.lit{animation:flick 1.6s ease-in-out infinite}
+@keyframes flick{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.05,.97) rotate(-2deg)}60%{transform:scale(.97,1.04) rotate(2deg)}}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.week span{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em}
+.dot{aspect-ratio:1;max-width:44px;width:100%;margin:0 auto;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);border:2px solid var(--line)}
+.dot.met{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.dot.frz{background:var(--info);border-color:var(--info);color:#fff}
+.dot.today{border-color:var(--accent);border-style:dashed}
+.dot.fut{opacity:.4}
+.dot svg{width:55%;height:55%}
+.risk{background:var(--down-soft);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600}
+.okline{background:var(--up-soft);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600}
+.heat{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;max-width:280px}
+.heat i{aspect-ratio:1;border-radius:6px;background:var(--surface-2);border:1px solid var(--line)}
+.heat i.met{background:var(--accent);border-color:transparent}
+.heat i.frz{background:var(--info);border-color:transparent}
+.heat i.today{outline:2px solid var(--ink);outline-offset:1px}
+.heat i.fut{opacity:.3}
+.pop{text-align:center;justify-items:center;padding:34px 24px!important}
 .disclaimer{font-size:12px;color:var(--muted);text-align:center}
 
 /* Path */
@@ -224,7 +247,7 @@ main{min-height:0;overflow-y:auto;overflow-x:hidden;border-radius:20px;-webkit-o
   <aside class="side" aria-label="Navigation">
     <div class="brand">
       <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="4" y="11" width="6" height="12" rx="1.5" fill="var(--down)"/><line x1="7" y1="6" x2="7" y2="27" stroke="var(--down)" stroke-width="2"/><rect x="18" y="7" width="6" height="14" rx="1.5" fill="var(--up)"/><line x1="21" y1="3" x2="21" y2="25" stroke="var(--up)" stroke-width="2"/><circle cx="21" cy="3" r="2.6" fill="var(--accent)"/></svg>
-      <b>Chartschule</b>
+      <b>ChartsTrade</b>
     </div>
     <div class="stats" id="stats"></div>
     <nav id="nav"></nav>
@@ -256,7 +279,7 @@ const dayStr = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() +
 
 /* ---------- Saved progress (this browser only) ---------- */
 const KEY = 'chartschule.v1';
-const DEF = {xp: 0, streak: 0, lastDay: null, mods: {}, blitzBest: 0, riskBest: 0, simDays: 0, simBestDisc: 0, simTotalR: 0, badges: {}, sound: true, quests: {date: null, done: {}}};
+const DEF = {xp: 0, streak: 0, bestStreak: 0, lastDay: null, goal: 30, freezes: 0, days: {}, met: {}, frozen: {}, streakLost: 0, mods: {}, blitzBest: 0, riskBest: 0, simDays: 0, simBestDisc: 0, simTotalR: 0, badges: {}, sound: true, quests: {date: null, done: {}}};
 function load(){ try { return Object.assign(JSON.parse(JSON.stringify(DEF)), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch(e){ return JSON.parse(JSON.stringify(DEF)); } }
 let S = load();
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
@@ -268,13 +291,73 @@ function levelOf(xp){ let l = 0; while(l < LV.length - 1 && xp >= LV[l + 1]) l++
 function addXP(n, why){
   const before = levelOf(S.xp);
   S.xp += n;
-  const t = dayStr(), y = dayStr(new Date(Date.now() - 864e5));
-  if(S.lastDay !== t){ S.streak = S.lastDay === y ? S.streak + 1 : 1; S.lastDay = t; if(S.streak >= 3) award('streak3'); if(S.streak >= 7) award('streak7'); }
+  const t = dayStr(), had = S.days[t] || 0;
+  S.days[t] = had + n;
   toast('+' + n + ' XP · ' + why, 'xp');
+  if(had < S.goal && had + n >= S.goal) setTimeout(extendStreak, 500);
   const after = levelOf(S.xp);
   if(after > before){ setTimeout(() => { toast('Level ' + (after + 1) + ': ' + TITLES[after] + '!'); confetti(); sfx('level'); }, 400); }
   save(); renderStats();
 }
+/* ---------- Streak system ---------- */
+const addDays = (d, n) => { const x = new Date(d + 'T12:00:00'); x.setDate(x.getDate() + n); return dayStr(x); };
+const dayDiff = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5);
+const MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365];
+const GOALS = [[15, 'Locker', 'etwa 1 Lektion'], [30, 'Normal', 'Lektion + Quiz'], [60, 'Ehrgeizig', 'Quiz + Spiele'], [100, 'Profi', 'volles Training']];
+function goalMetToday(){ return !!S.met[dayStr()]; }
+function checkStreak(){
+  // Called on start: missed days use up a streak freeze or break the streak.
+  if(!S.streak || !S.lastDay) return;
+  const missed = dayDiff(S.lastDay, dayStr()) - 1;
+  if(missed <= 0) return;
+  if(S.freezes >= missed){
+    for(let i = 1; i <= missed; i++) S.frozen[addDays(S.lastDay, i)] = true;
+    S.freezes -= missed; S.lastDay = addDays(dayStr(), -1);
+    S.pendingPop = {kind: 'frozen', n: missed};
+  } else { S.streakLost = S.streak; S.streak = 0; S.pendingPop = {kind: 'lost', n: S.streakLost}; }
+  save();
+}
+function extendStreak(){
+  const t = dayStr();
+  if(S.met[t]) return;
+  S.met[t] = true;
+  S.streak = S.lastDay === addDays(t, -1) ? S.streak + 1 : 1;
+  S.lastDay = t; S.streakLost = 0;
+  S.bestStreak = Math.max(S.bestStreak, S.streak);
+  // prune history older than 120 days
+  Object.keys(S.days).forEach(d => { if(dayDiff(d, t) > 120){ delete S.days[d]; delete S.met[d]; delete S.frozen[d]; } });
+  let gotFreeze = false;
+  if(S.streak % 7 === 0 && S.freezes < 2){ S.freezes++; gotFreeze = true; }
+  save(); renderStats(); sfx('level');
+  if(S.streak >= 3) award('streak3'); if(S.streak >= 7) award('streak7'); if(S.streak >= 14) award('streak14'); if(S.streak >= 30) award('streak30');
+  if(MILESTONES.includes(S.streak)){ confetti(); showPop(`<div class="pop" style="display:grid;gap:14px">${flame(96, true)}<div class="streak-num num">${S.streak}</div><h2>${S.streak} Tage in Folge!</h2><p class="muted" style="max-width:40ch">Meilenstein geschafft. Genau so baut man Gewohnheiten auf, und Gewohnheiten schlagen Motivation.${gotFreeze ? ' Du bekommst einen Serienschutz dazu.' : ''}</p><button class="btn pri big" data-act="closepop">Weiter <kbd>Enter</kbd></button></div>`); }
+  else toast('Tagesziel erreicht! Serie: ' + S.streak + (S.streak === 1 ? ' Tag' : ' Tage') + (gotFreeze ? ' · +1 Serienschutz' : ''));
+  if(V.name === 'home') home(); else if(V.name === 'profile') profile();
+}
+function flame(size, lit){
+  return `<svg class="flame ${lit ? 'lit' : ''}" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3-1-6 1-9z" fill="${lit ? 'var(--accent)' : 'var(--line)'}"/><path d="M12 12c.6 2 3 3 3 5.5a3 3 0 0 1-6 0c0-1.5 1-2.5 1.5-3 .2 1 .6 1.5 1.2 1.5-.2-1.5-.4-2.8.3-4z" fill="${lit ? 'var(--down)' : 'var(--surface-2)'}" opacity=".85"/></svg>`;
+}
+const SNOW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M4 6l16 12M20 6L4 18M9 3l3 3 3-3M9 21l3-3 3 3"/></svg>';
+function weekRow(){
+  const t = dayStr(), now = new Date(t + 'T12:00:00'), mon = addDays(t, -((now.getDay() + 6) % 7));
+  return `<div class="week">${['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((n, i) => { const d = addDays(mon, i), cls = S.met[d] ? 'met' : S.frozen[d] ? 'frz' : d === t ? 'today' : d > t ? 'fut' : '';
+    return `<div style="display:grid;gap:4px"><span>${n}</span><i class="dot ${cls}" title="${d}">${S.met[d] ? I.check : S.frozen[d] ? SNOW : ''}</i></div>`; }).join('')}</div>`;
+}
+function streakCard(){
+  const t = dayStr(), xp = S.days[t] || 0, met = goalMetToday(), pct = clamp(xp / S.goal * 100, 0, 100);
+  const status = met ? `<div class="okline">Tagesziel geschafft. Deine Serie ist für heute sicher.</div>`
+    : S.streak ? `<div class="risk">Noch ${S.goal - xp} XP heute, sonst ${S.freezes ? 'kostet es einen Serienschutz' : 'reißt deine Serie'}.</div>`
+    : S.streakLost ? `<div class="risk">Deine Serie von ${S.streakLost} Tagen ist gerissen. Hol dir heute ${S.goal} XP und starte neu.</div>`
+    : `<div class="why">Sammle heute ${S.goal} XP und starte deine erste Serie.</div>`;
+  return `<section class="card streak"><div class="streak-top">${flame(64, met)}<div style="flex:1"><div class="streak-num num">${S.streak}</div><span class="eyebrow">${S.streak === 1 ? 'Tag' : 'Tage'} in Folge · Rekord ${S.bestStreak}</span></div>
+    <div style="text-align:right"><span class="chip" title="Serienschutz" style="color:var(--info)"><span style="width:16px;height:16px;display:inline-grid">${SNOW}</span><b class="num">${S.freezes}/2</b></span></div></div>
+    <div style="display:grid;gap:6px"><div class="lvl" style="font-size:14px"><b style="font-size:14px">Tagesziel</b><span class="num">${Math.min(xp, S.goal)} / ${S.goal} XP</span></div><div class="bar" style="height:10px"><i style="width:${pct}%"></i></div></div>
+    ${weekRow()}${status}</section>`;
+}
+let popOpen = false;
+function showPop(html){ popOpen = true; $('#modal').innerHTML = `<div class="modal" data-act="closepop"><div class="card" onclick="event.stopPropagation()">${html}</div></div>`; }
+function closePop(){ popOpen = false; $('#modal').innerHTML = ''; }
+
 const QUESTS = [
   {id: 'learn', t: 'Schließe eine Lektion oder ein Quiz ab'},
   {id: 'blitz', t: 'Schaffe 8 Punkte im Muster-Blitz'},
@@ -293,8 +376,10 @@ const BADGES = [
   {id: 'sim1', n: 'Erster Handelstag', d: 'Einen Sim-Tag beendet'},
   {id: 'disc100', n: 'Eiserne Disziplin', d: 'Sim-Tag mit Disziplin 100 und mindestens einem Trade'},
   {id: 'green5', n: 'Grüne Woche', d: '5 Sim-Tage beendet'},
-  {id: 'streak3', n: 'Dranbleiber', d: '3 Tage in Folge gelernt'},
+  {id: 'streak3', n: 'Dranbleiber', d: '3 Tage in Folge das Tagesziel geschafft'},
   {id: 'streak7', n: 'Gewohnheit', d: '7 Tage in Folge gelernt'},
+  {id: 'streak14', n: 'Zwei Wochen Feuer', d: '14 Tage in Folge gelernt'},
+  {id: 'streak30', n: 'Unaufhaltsam', d: '30 Tage in Folge gelernt'},
   {id: 'allquests', n: 'Quest-Komplett', d: 'Alle Tagesquests an einem Tag'}
 ];
 function award(id){ if(S.badges[id]) return; S.badges[id] = dayStr(); save(); const b = BADGES.find(x => x.id === id); if(b) setTimeout(() => { toast('Abzeichen: ' + b.n); sfx('level'); }, 900); }
@@ -525,7 +610,8 @@ let V = {name: 'home', key: null, nav: true};
 let helpOpen = false;
 function renderStats(){
   const l = levelOf(S.xp), lo = LV[l], hi = LV[l + 1] || lo + 1000, pct = clamp((S.xp - lo) / (hi - lo) * 100, 0, 100);
-  $('#stats').innerHTML = `<div class="lvl"><b>Level ${l + 1}</b><span class="muted">${TITLES[l]}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div class="lvl"><span class="num">${de(S.xp)} XP</span><span class="chip" style="padding:2px 8px">${I.flame}<span class="num">${S.streak}</span></span></div>`;
+  $('#stats').innerHTML = `<div class="lvl"><b>Level ${l + 1}</b><span class="muted">${TITLES[l]}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div class="lvl"><span class="num">${de(S.xp)} XP</span><span class="chip ${goalMetToday() ? 'acc' : ''}" style="padding:2px 8px" title="Serie">${I.flame}<span class="num">${S.streak}</span></span></div>
+  <div class="lvl" style="margin-top:4px"><span class="muted">Heute</span><span class="num muted">${Math.min(S.days[dayStr()] || 0, S.goal)}/${S.goal} XP</span></div><div class="bar" style="height:5px"><i style="width:${clamp((S.days[dayStr()] || 0) / S.goal * 100, 0, 100)}%;background:var(${goalMetToday() ? '--up' : '--accent'})"></i></div>`;
 }
 function renderNav(){ const top = ['blitz', 'risk', 'player'].includes(V.name) ? (V.name === 'player' ? 'path' : 'arcade') : V.name; $('#nav').innerHTML = NAV.map(([id, t, k, ic]) => `<button class="nav ${top === id ? 'on' : ''}" data-act="go" data-v="${id}" aria-label="${t}">${ic}<span>${t}</span><kbd>${k}</kbd></button>`).join(''); }
 function go(name, arg){
@@ -547,7 +633,7 @@ function home(){
   main.innerHTML = `<div class="stage">
    <section class="hero">
      <div style="display:grid;gap:14px">
-       <span class="eyebrow">${S.xp ? 'Level ' + (l + 1) + ' · ' + TITLES[l] : 'Willkommen in der Chartschule'}</span>
+       <span class="eyebrow">${S.xp ? 'Level ' + (l + 1) + ' · ' + TITLES[l] : 'Willkommen bei ChartsTrade'}</span>
        <h1>${nm ? (S.xp ? 'Weiter mit Modul ' + (MODS.indexOf(nm) + 1) + ': ' + nm.t : 'Von null zum ersten simulierten Trade') : 'Alle Module geschafft!'}</h1>
        <p>${nm ? nm.sub + '. Kurze Lektionen, ein Quiz, dann ab in die Arcade.' : 'Halte deine Skills im Simulator und in der Arcade frisch.'}</p>
        <div class="segs" aria-label="${done} von 8 Modulen">${MODS.map(m => `<i class="${modDone(m) ? 'done' : ''}"></i>`).join('')}</div>
@@ -558,14 +644,15 @@ function home(){
      <canvas id="heroc" aria-hidden="true"></canvas>
    </section>
    <div class="grid2">
+     ${streakCard()}
      <section class="card"><div class="navrow" style="margin-bottom:6px"><h3>Tagesquests</h3><span class="eyebrow">je +25 XP</span></div>
        ${QUESTS.map(q => `<div class="quest"><span class="tick ${S.quests.done[q.id] ? 'ok' : ''}">${S.quests.done[q.id] ? I.check : ''}</span><span>${q.t}</span></div>`).join('')}
+       <div class="tip" style="border-radius:12px;padding:14px;margin-top:14px;display:grid;gap:6px"><span class="eyebrow" style="color:var(--ink);opacity:.7">Regel des Tages</span><b style="font-family:var(--f-display);font-size:19px;line-height:1.25">${tip}</b>
+       <span style="font-size:13px;opacity:.75">${done}/8 Module · ${S.simDays} Sim-Tage · ${Object.keys(S.badges).length}/${BADGES.length} Abzeichen</span></div>
      </section>
-     <section class="card tip" style="display:grid;gap:10px;align-content:start"><span class="eyebrow" style="color:var(--ink);opacity:.7">Regel des Tages</span><h2>${tip}</h2>
-       <p class="muted" style="color:var(--ink);opacity:.75">Fortschritt: ${done}/8 Module · ${S.simDays} Sim-Tage · ${Object.keys(S.badges).length}/${BADGES.length} Abzeichen</p></section>
    </div>
    <div class="grid3">${gameCards()}</div>
-   <p class="disclaimer">Chartschule ist eine Lern-App und keine Anlageberatung. Alle Kurse sind simuliert. Dein Fortschritt wird nur in diesem Browser gespeichert.</p>
+   <p class="disclaimer">ChartsTrade ist eine Lern-App und keine Anlageberatung. Alle Kurse sind simuliert. Dein Fortschritt wird nur in diesem Browser gespeichert.</p>
   </div>`;
   drawHero();
   V.key = k => { if(k === 'Enter'){ nm ? go('player', {id: nm.id}) : go('sim'); return true; } };
@@ -937,13 +1024,24 @@ function niceStep(raw){ const p = Math.pow(10, Math.floor(Math.log10(raw))), n =
 function profile(){
   const l = levelOf(S.xp);
   main.innerHTML = `<div class="stage"><div style="display:grid;gap:6px"><span class="eyebrow">Profil</span><h1>Level ${l + 1} · ${TITLES[l]}</h1></div>
-   <section class="bigstats"><div><span class="eyebrow">XP</span><b>${de(S.xp)}</b></div><div><span class="eyebrow">Serie</span><b>${S.streak} ${S.streak === 1 ? 'Tag' : 'Tage'}</b></div><div><span class="eyebrow">Module</span><b>${MODS.filter(modDone).length}/8</b></div><div><span class="eyebrow">Sim-Ergebnis</span><b>${S.simTotalR >= 0 ? '+' : ''}${de(S.simTotalR, 1)}R</b></div></section>
+   <section class="bigstats"><div><span class="eyebrow">XP</span><b>${de(S.xp)}</b></div><div><span class="eyebrow">Serie · Rekord ${S.bestStreak}</span><b>${S.streak} ${S.streak === 1 ? 'Tag' : 'Tage'}</b></div><div><span class="eyebrow">Module</span><b>${MODS.filter(modDone).length}/8</b></div><div><span class="eyebrow">Sim-Ergebnis</span><b>${S.simTotalR >= 0 ? '+' : ''}${de(S.simTotalR, 1)}R</b></div></section>
+   <section class="card" style="display:grid;gap:16px"><div class="navrow"><h3>Serie</h3><span class="chip" style="color:var(--info)"><span style="width:16px;height:16px;display:inline-grid">${SNOW}</span>${S.freezes}/2 Serienschutz</span></div>
+     <div class="grid2" style="align-items:start"><div style="display:grid;gap:10px"><span class="eyebrow">Letzte 5 Wochen</span>${heatmap()}<div class="legend"><span><i style="background:var(--accent);height:10px;width:10px"></i>Ziel geschafft</span><span><i style="background:var(--info);height:10px;width:10px"></i>Serienschutz</span></div></div>
+     <div style="display:grid;gap:10px"><span class="eyebrow">Tagesziel</span><div class="seg" style="grid-template-columns:repeat(4,1fr)">${GOALS.map(([v, n]) => `<button class="${S.goal === v ? 'on' : ''}" data-act="goal" data-v="${v}">${n}<br><span class="num muted" style="font-size:12px">${v} XP</span></button>`).join('')}</div>
+     <p class="muted" style="font-size:14px">Schaffst du dein Tagesziel, wächst die Serie um einen Tag. Alle 7 Tage bekommst du einen Serienschutz (max. 2). Der springt automatisch ein, wenn du mal einen Tag verpasst.</p></div></div></section>
    <section class="card" style="display:grid;gap:14px"><h3>Abzeichen <span class="muted num">${Object.keys(S.badges).length}/${BADGES.length}</span></h3><div class="badges">${BADGES.map(b => `<div class="badge ${S.badges[b.id] ? 'got' : ''}"><b>${b.n}</b><small>${b.d}</small></div>`).join('')}</div></section>
    <section class="card" style="display:grid;gap:14px"><h3>Einstellungen</h3>
      <div class="navrow"><span>Soundeffekte</span><button class="btn" data-act="sound">${S.sound ? 'An' : 'Aus'}</button></div>
      <div class="navrow"><span>Tastenkürzel anzeigen</span><button class="btn" data-act="help">Öffnen <kbd>?</kbd></button></div>
      <div class="navrow"><span>Fortschritt löschen <span class="muted">(XP, Module, Rekorde)</span></span><span id="resetwrap"><button class="btn" data-act="reset1">Zurücksetzen</button></span></div>
    </section><p class="disclaimer">Dein Fortschritt liegt nur in diesem Browser. Lernen ersetzt keine Anlageberatung.</p></div>`;
+}
+
+function heatmap(){
+  const t = dayStr(), now = new Date(t + 'T12:00:00'), mon = addDays(t, -((now.getDay() + 6) % 7) - 28);
+  let h = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(n => `<span class="eyebrow" style="font-size:10px;text-align:center">${n}</span>`).join('');
+  for(let i = 0; i < 35; i++){ const d = addDays(mon, i); h += `<i class="${S.met[d] ? 'met' : S.frozen[d] ? 'frz' : ''} ${d === t ? 'today' : ''} ${d > t ? 'fut' : ''}" title="${d}: ${S.days[d] || 0} XP"></i>`; }
+  return `<div class="heat">${h}</div>`;
 }
 
 /* ---------- Help overlay ---------- */
@@ -977,6 +1075,8 @@ document.addEventListener('click', e => {
     case 'simnew': newSim(); simView(); break;
     case 'sound': S.sound = !S.sound; save(); profile(); if(S.sound) sfx('ok'); break;
     case 'help': toggleHelp(); break;
+    case 'closepop': closePop(); if(V.name === 'home') home(); break;
+    case 'goal': S.goal = +v; save(); if((S.days[dayStr()] || 0) >= S.goal) extendStreak(); profile(); renderStats(); break;
     case 'reset1': $('#resetwrap').innerHTML = '<button class="btn down" data-act="reset2">Wirklich alles löschen</button> <button class="btn" data-act="go" data-v="profile">Abbrechen</button>'; break;
     case 'reset2': S = JSON.parse(JSON.stringify(DEF)); save(); SIM = null; toast('Fortschritt gelöscht'); go('home'); break;
   }
@@ -984,6 +1084,7 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if(e.metaKey || e.ctrlKey || e.altKey || e.repeat && e.key !== ' ' && e.key !== 'ArrowRight') return;
   const k = e.key;
+  if(popOpen){ if(k === 'Escape' || k === 'Enter' || k === ' '){ closePop(); if(V.name === 'home') home(); e.preventDefault(); } return; }
   if(k === '?' || (k === '/' && e.shiftKey)){ toggleHelp(); e.preventDefault(); return; }
   if(helpOpen){ if(k === 'Escape' || k === 'Enter'){ toggleHelp(); e.preventDefault(); } return; }
   if(V.key && V.key(k, e)){ e.preventDefault(); return; }
@@ -993,5 +1094,12 @@ document.addEventListener('keydown', e => {
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if(V.name === 'sim') drawSim(); if(V.name === 'home') drawHero(); }, 120); });
 try { if('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|anthropic/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch(e){}
 
+// Migrate old streak data (before the daily goal existed)
+if(S.lastDay && !Object.keys(S.met).length && S.streak) S.met[S.lastDay] = true;
+checkStreak();
 go('home');
+if(S.pendingPop){ const p = S.pendingPop; delete S.pendingPop; save();
+  setTimeout(() => showPop(p.kind === 'frozen'
+    ? `<div class="pop" style="display:grid;gap:14px"><span style="width:72px;height:72px;color:var(--info);display:grid">${SNOW}</span><h2>Serienschutz hat dich gerettet</h2><p class="muted" style="max-width:40ch">Du hast ${p.n === 1 ? 'einen Tag' : p.n + ' Tage'} verpasst. Deine Serie von <b>${S.streak} Tagen</b> lebt weiter. Noch übrig: ${S.freezes} Serienschutz.</p><button class="btn pri big" data-act="closepop">Weiterlernen <kbd>Enter</kbd></button></div>`
+    : `<div class="pop" style="display:grid;gap:14px">${flame(80, false)}<h2>Deine Serie ist gerissen</h2><p class="muted" style="max-width:40ch">${p.n} ${p.n === 1 ? 'Tag' : 'Tage'} waren es. Kein Drama: Hol dir heute ${S.goal} XP und die nächste Serie läuft. Dein Rekord bleibt: ${S.bestStreak} Tage.</p><button class="btn pri big" data-act="closepop">Neue Serie starten <kbd>Enter</kbd></button></div>`), 300); }
 </script>
