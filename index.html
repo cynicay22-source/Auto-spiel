@@ -252,7 +252,42 @@ main{min-height:0;overflow-y:auto;overflow-x:hidden;border-radius:20px;-webkit-o
   .bigstats{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:560px){.grid3,.opts.g2{grid-template-columns:1fr}.card{padding:16px}.hero{padding:20px}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* Motion */
+:root{--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.34,1.56,.64,1)}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}}
+@keyframes fromR{from{opacity:0;transform:translateX(70px)}}
+@keyframes fromL{from{opacity:0;transform:translateX(-70px)}}
+@keyframes pop{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+@keyframes growY{from{opacity:0;transform:scaleY(0)}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes dash{to{stroke-dashoffset:0}}
+@keyframes bump{40%{transform:scale(1.07)}}
+@keyframes glow{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}100%{box-shadow:0 0 0 18px transparent}}
+.st{animation:rise .6s var(--ease) both;animation-delay:var(--d,0ms)}
+.sr{animation:fromR .5s var(--ease) both;animation-delay:var(--d,0ms)}
+.sl{animation:fromL .5s var(--ease) both;animation-delay:var(--d,0ms)}
+.cdl{transform-box:fill-box;transform-origin:50% 50%;animation:growY .5s var(--spring) both}
+.fade{animation:fadeIn .6s ease both}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:dash 1s ease-out forwards}
+.why.in{animation:rise .4s var(--ease) both}
+.opt.right{animation:bump .45s var(--spring)}
+.opt.wrong{animation:fno .4s}
+.bump{display:inline-block;animation:bump .4s var(--spring)}
+.modal{animation:fadeIn .25s ease both}
+.modal .card{animation:pop .45s var(--spring) both}
+.nav{transition:background .25s,color .25s}
+.nav.on svg{animation:pop .45s var(--spring)}
+.btn{transition:transform .15s var(--ease),background .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.96)}
+.btn.pri.big{animation:glow 2.4s ease-out 1s infinite}
+.card.game:hover{box-shadow:0 2px 4px rgba(17,29,51,.08),0 16px 34px rgba(17,29,51,.12)}
+.game .ico{transition:transform .3s var(--spring)}
+.game:hover .ico{transform:rotate(-8deg) scale(1.1)}
+.dot.met,.dot.frz{animation:pop .5s var(--spring) both;animation-delay:var(--d,0ms)}
+.toast.out{transition:opacity .3s,transform .3s;opacity:0;transform:translateY(10px)}
+.bar i{transition:width .8s var(--ease)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.draw{stroke-dashoffset:0}}
 </style>
 
 <div class="app">
@@ -288,6 +323,13 @@ function shuffle(a, r = Math.random){ a = a.slice(); for(let i = a.length - 1; i
 const pick = (a, r = Math.random) => a[Math.floor(r() * a.length)];
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const dayStr = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+/* ---------- Motion helpers ---------- */
+const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+function stagger(els, cls = 'st', step = 60, base = 0){ Array.from(els).forEach((el, i) => { el.classList.remove('st', 'sr', 'sl'); void el.offsetWidth; el.style.setProperty('--d', (base + Math.min(i, 12) * step) + 'ms'); el.classList.add(cls); }); }
+const BARS = {};
+function animBars(root = document){ root.querySelectorAll('[data-bar]').forEach(el => { const k = el.dataset.bar, to = +el.dataset.w; const from = BARS[k] != null ? BARS[k] : 0; el.style.width = from + '%'; void el.offsetWidth; requestAnimationFrame(() => { el.style.width = to + '%'; }); BARS[k] = to; }); }
+function countUp(root = document){ if(reduced()) return; root.querySelectorAll('[data-count]').forEach(el => { const to = +el.dataset.count, dec = +(el.dataset.dec || 0), t0 = performance.now(), dur = 850; const f = now => { const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3); el.textContent = de(to * e, dec); if(p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); }); }
 
 /* ---------- Saved progress (this browser only) ---------- */
 const KEY = 'chartschule.v1';
@@ -342,7 +384,7 @@ function extendStreak(){
   if(S.streak % 7 === 0 && S.freezes < 2){ S.freezes++; gotFreeze = true; }
   save(); renderStats(); sfx('level');
   if(S.streak >= 3) award('streak3'); if(S.streak >= 7) award('streak7'); if(S.streak >= 14) award('streak14'); if(S.streak >= 30) award('streak30');
-  if(MILESTONES.includes(S.streak)){ confetti(); showPop(`<div class="pop" style="display:grid;gap:14px">${flame(96, true)}<div class="streak-num num">${S.streak}</div><h2>${S.streak} Tage in Folge!</h2><p class="muted" style="max-width:40ch">Meilenstein geschafft. Genau so baut man Gewohnheiten auf, und Gewohnheiten schlagen Motivation.${gotFreeze ? ' Du bekommst einen Serienschutz dazu.' : ''}</p><button class="btn pri big" data-act="closepop">Weiter <kbd>Enter</kbd></button></div>`); }
+  if(MILESTONES.includes(S.streak)){ confetti(); showPop(`<div class="pop" style="display:grid;gap:14px">${flame(96, true)}<div class="streak-num num" data-count="${S.streak}">${S.streak}</div><h2>${S.streak} Tage in Folge!</h2><p class="muted" style="max-width:40ch">Meilenstein geschafft. Genau so baut man Gewohnheiten auf, und Gewohnheiten schlagen Motivation.${gotFreeze ? ' Du bekommst einen Serienschutz dazu.' : ''}</p><button class="btn pri big" data-act="closepop">Weiter <kbd>Enter</kbd></button></div>`); }
   else toast('Tagesziel erreicht! Serie: ' + S.streak + (S.streak === 1 ? ' Tag' : ' Tage') + (gotFreeze ? ' · +1 Serienschutz' : ''));
   if(V.name === 'home') home(); else if(V.name === 'profile') profile();
 }
@@ -361,13 +403,13 @@ function streakCard(){
     : S.streak ? `<div class="risk">Noch ${S.goal - xp} XP heute, sonst ${S.freezes ? 'kostet es einen Serienschutz' : 'reißt deine Serie'}.</div>`
     : S.streakLost ? `<div class="risk">Deine Serie von ${S.streakLost} Tagen ist gerissen. Hol dir heute ${S.goal} XP und starte neu.</div>`
     : `<div class="why">Sammle heute ${S.goal} XP und starte deine erste Serie.</div>`;
-  return `<section class="card streak"><div class="streak-top">${flame(64, met)}<div style="flex:1"><div class="streak-num num">${S.streak}</div><span class="eyebrow">${S.streak === 1 ? 'Tag' : 'Tage'} in Folge · Rekord ${S.bestStreak}</span></div>
+  return `<section class="card streak"><div class="streak-top">${flame(64, met)}<div style="flex:1"><div class="streak-num num" data-count="${S.streak}">${S.streak}</div><span class="eyebrow">${S.streak === 1 ? 'Tag' : 'Tage'} in Folge · Rekord ${S.bestStreak}</span></div>
     <div style="text-align:right"><span class="chip" title="Serienschutz" style="color:var(--info)"><span style="width:16px;height:16px;display:inline-grid">${SNOW}</span><b class="num">${S.freezes}/2</b></span></div></div>
-    <div style="display:grid;gap:6px"><div class="lvl" style="font-size:14px"><b style="font-size:14px">Tagesziel</b><span class="num">${Math.min(xp, S.goal)} / ${S.goal} XP</span></div><div class="bar" style="height:10px"><i style="width:${pct}%"></i></div></div>
+    <div style="display:grid;gap:6px"><div class="lvl" style="font-size:14px"><b style="font-size:14px">Tagesziel</b><span class="num">${Math.min(xp, S.goal)} / ${S.goal} XP</span></div><div class="bar" style="height:10px"><i data-bar="goalcard" data-w="${pct}"></i></div></div>
     ${weekRow()}${status}</section>`;
 }
 let popOpen = false;
-function showPop(html){ popOpen = true; $('#modal').innerHTML = `<div class="modal" data-act="closepop"><div class="card" onclick="event.stopPropagation()">${html}</div></div>`; }
+function showPop(html){ popOpen = true; $('#modal').innerHTML = `<div class="modal" data-act="closepop"><div class="card" onclick="event.stopPropagation()">${html}</div></div>`; stagger($('#modal').querySelectorAll('.pop > *'), 'st', 80, 150); countUp($('#modal')); }
 function closePop(){ popOpen = false; $('#modal').innerHTML = ''; }
 
 const QUESTS = [
@@ -397,7 +439,7 @@ const BADGES = [
 function award(id){ if(S.badges[id]) return; S.badges[id] = dayStr(); save(); const b = BADGES.find(x => x.id === id); if(b) setTimeout(() => { toast('Abzeichen: ' + b.n); sfx('level'); }, 900); }
 
 /* ---------- Feedback: toast, sound, confetti ---------- */
-function toast(msg, cls = ''){ const el = document.createElement('div'); el.className = 'toast ' + cls; el.textContent = msg; const box = $('#toasts'); box.appendChild(el); while(box.children.length > 3) box.firstChild.remove(); setTimeout(() => el.remove(), 2600); }
+function toast(msg, cls = ''){ const el = document.createElement('div'); el.className = 'toast ' + cls; el.textContent = msg; const box = $('#toasts'); box.appendChild(el); while(box.children.length > 3) box.firstChild.remove(); setTimeout(() => el.classList.add('out'), 2300); setTimeout(() => el.remove(), 2650); }
 let AC = null;
 function sfx(kind){
   if(!S.sound) return;
@@ -429,12 +471,12 @@ function candleSVG(cs, o = {}){
   const y = v => pad + (hi - v) / ((hi - lo) || 1) * (h - pad * 2);
   const X = i => pad + step * i + step / 2;
   let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${o.label || 'Kerzenchart'}">`;
-  (o.hl || []).forEach(i => { s += `<rect x="${X(i) - step / 2 + 1}" y="4" width="${step - 2}" height="${h - 8}" rx="6" fill="var(--accent)" opacity=".16"/>`; });
+  (o.hl || []).forEach(i => { s += `<rect x="${X(i) - step / 2 + 1}" y="4" width="${step - 2}" height="${h - 8}" rx="6" fill="var(--accent)" opacity=".16" class="fade" style="animation-delay:${n * 28 + 200}ms"/>`; });
   (o.box || []).forEach(b => { s += `<rect x="${X(b.a) - step / 2}" y="${y(b.hi)}" width="${step * (b.b - b.a + 1)}" height="${y(b.lo) - y(b.hi)}" fill="var(--info)" opacity=".1"/>`; });
-  (o.lines || []).forEach(l => { s += `<line x1="${pad}" x2="${w - pad - rgt + (rgt ? 6 : 0)}" y1="${y(l.v)}" y2="${y(l.v)}" stroke="var(${l.c || '--muted'})" stroke-width="1.6" stroke-dasharray="${l.solid ? '' : '5 4'}"/>`; if(l.t) s += `<text x="${w - rgt + 2}" y="${y(l.v) + 4}" font-size="12" font-weight="700" fill="var(${l.c || '--muted'})" font-family="Figtree,sans-serif">${l.t}</text>`; });
-  cs.forEach((c, i) => { const up = c[3] >= c[0], col = up ? 'var(--up)' : 'var(--down)', top = y(Math.max(c[0], c[3])), bh = Math.max(1.5, Math.abs(y(c[0]) - y(c[3]))); s += `<line x1="${X(i)}" x2="${X(i)}" y1="${y(c[1])}" y2="${y(c[2])}" stroke="${col}" stroke-width="1.6"/><rect x="${X(i) - bw / 2}" y="${top}" width="${bw}" height="${bh}" rx="1.5" fill="${col}"/>`; });
-  (o.over || []).forEach(l => { const pts = l.pts.map((v, i) => v == null ? null : X(i) + ',' + y(v)).filter(Boolean).join(' '); s += `<polyline points="${pts}" fill="none" stroke="var(${l.c})" stroke-width="2.4" stroke-linejoin="round"/>`; });
-  (o.marks || []).forEach(m => { const yy = y(m.v); s += `<path d="M${X(m.i)} ${yy + (m.up ? 8 : -8)} l-6 ${m.up ? 10 : -10} h12z" fill="var(--accent)"/>`; });
+  (o.lines || []).forEach(l => { s += `<line x1="${pad}" x2="${w - pad - rgt + (rgt ? 6 : 0)}" y1="${y(l.v)}" y2="${y(l.v)}" stroke="var(${l.c || '--muted'})" stroke-width="1.6" stroke-dasharray="${l.solid ? '' : '5 4'}" class="fade" style="animation-delay:${n * 28}ms"/>`; if(l.t) s += `<text x="${w - rgt + 2}" y="${y(l.v) + 4}" font-size="12" font-weight="700" fill="var(${l.c || '--muted'})" font-family="Figtree,sans-serif" class="fade" style="animation-delay:${n * 28 + 100}ms">${l.t}</text>`; });
+  cs.forEach((c, i) => { const up = c[3] >= c[0], col = up ? 'var(--up)' : 'var(--down)', top = y(Math.max(c[0], c[3])), bh = Math.max(1.5, Math.abs(y(c[0]) - y(c[3]))); s += `<g class="cdl" style="animation-delay:${i * 28}ms"><line x1="${X(i)}" x2="${X(i)}" y1="${y(c[1])}" y2="${y(c[2])}" stroke="${col}" stroke-width="1.6"/><rect x="${X(i) - bw / 2}" y="${top}" width="${bw}" height="${bh}" rx="1.5" fill="${col}"/></g>`; });
+  (o.over || []).forEach(l => { const pts = l.pts.map((v, i) => v == null ? null : X(i) + ',' + y(v)).filter(Boolean).join(' '); s += `<polyline points="${pts}" pathLength="1" class="draw" style="animation-delay:${n * 20}ms" fill="none" stroke="var(${l.c})" stroke-width="2.4" stroke-linejoin="round"/>`; });
+  (o.marks || []).forEach(m => { const yy = y(m.v); s += `<path d="M${X(m.i)} ${yy + (m.up ? 8 : -8)} l-6 ${m.up ? 10 : -10} h12z" fill="var(--accent)" class="fade" style="animation-delay:${n * 28 + 250}ms"/>`; });
   return s + '</svg>';
 }
 function series(closes, seed = 7, wick = .35){ const r = rng(seed); return closes.map((c, i) => { const o = i ? closes[i - 1] + (r() - .5) * .15 : c - .3; return [o, Math.max(o, c) + r() * wick, Math.min(o, c) - r() * wick, c]; }); }
@@ -622,8 +664,9 @@ let V = {name: 'home', key: null, nav: true};
 let helpOpen = false;
 function renderStats(){
   const l = levelOf(S.xp), lo = LV[l], hi = LV[l + 1] || lo + 1000, pct = clamp((S.xp - lo) / (hi - lo) * 100, 0, 100);
-  $('#stats').innerHTML = `<div class="lvl"><b>Level ${l + 1}</b><span class="muted">${TITLES[l]}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div class="lvl"><span class="num">${de(S.xp)} XP</span><span class="chip ${goalMetToday() ? 'acc' : ''}" style="padding:2px 8px" title="Serie">${I.flame}<span class="num">${S.streak}</span></span></div>
-  <div class="lvl" style="margin-top:4px"><span class="muted">Heute</span><span class="num muted">${Math.min(S.days[dayStr()] || 0, S.goal)}/${S.goal} XP</span></div><div class="bar" style="height:5px"><i style="width:${clamp((S.days[dayStr()] || 0) / S.goal * 100, 0, 100)}%;background:var(${goalMetToday() ? '--up' : '--accent'})"></i></div>`;
+  $('#stats').innerHTML = `<div class="lvl"><b>Level ${l + 1}</b><span class="muted">${TITLES[l]}</span></div><div class="bar"><i data-bar="lvl" data-w="${pct}"></i></div><div class="lvl"><span class="num">${de(S.xp)} XP</span><span class="chip ${goalMetToday() ? 'acc' : ''}" style="padding:2px 8px" title="Serie">${I.flame}<span class="num">${S.streak}</span></span></div>
+  <div class="lvl" style="margin-top:4px"><span class="muted">Heute</span><span class="num muted">${Math.min(S.days[dayStr()] || 0, S.goal)}/${S.goal} XP</span></div><div class="bar" style="height:5px"><i data-bar="goal" data-w="${clamp((S.days[dayStr()] || 0) / S.goal * 100, 0, 100)}" style="background:var(${goalMetToday() ? '--up' : '--accent'})"></i></div>`;
+  animBars($('#stats'));
 }
 function renderNav(){ const top = ['blitz', 'risk', 'player'].includes(V.name) ? (V.name === 'player' ? 'path' : 'arcade') : V.name; $('#nav').innerHTML = NAV.map(([id, t, k, ic]) => `<button class="nav ${top === id ? 'on' : ''}" data-act="go" data-v="${id}" aria-label="${t}">${ic}<span>${t}</span><kbd>${k}</kbd></button>`).join(''); }
 function go(name, arg){
@@ -631,6 +674,11 @@ function go(name, arg){
   V = {name, key: null, nav: true};
   ({home, path, arcade, sim: simView, profile, player, blitz, risk})[name](arg);
   renderNav(); renderStats(); main.scrollTop = 0;
+  const st = main.firstElementChild;
+  if(st){ stagger(st.children, 'st', 70); stagger(st.querySelectorAll('.grid2 > *, .grid3 > *, .mods > *, .badges > *, .bigstats > *'), 'st', 45, 160); }
+  stagger(main.querySelectorAll('.week .dot.met, .week .dot.frz'), 'st', 0, 0);
+  main.querySelectorAll('.week .dot').forEach((d, i) => d.style.setProperty('--d', (350 + i * 70) + 'ms'));
+  animBars(main); countUp(main);
 }
 let timers = [];
 function stopTimers(){ timers.forEach(clearInterval); timers = []; if(SIM){ SIM.playing = false; } }
@@ -681,8 +729,17 @@ function drawHero(){
   const r = rng(42 + S.xp), n = Math.max(16, Math.floor(w / 14)); let p = 50; const cs = [];
   for(let i = 0; i < n; i++){ const o = p, cl = o + (r() - .42) * 3; cs.push([o, Math.max(o, cl) + r() * 1.2, Math.min(o, cl) - r() * 1.2, cl]); p = cl; }
   const lo = Math.min(...cs.map(k => k[2])), hi = Math.max(...cs.map(k => k[1])), Y = v => 6 + (hi - v) / (hi - lo) * (h - 12), st = w / n;
-  cs.forEach((k, i) => { const col = k[3] >= k[0] ? css('--up') : css('--down'); x.strokeStyle = x.fillStyle = col; x.globalAlpha = .35 + .65 * (i / n); x.beginPath(); x.moveTo(i * st + st / 2, Y(k[1])); x.lineTo(i * st + st / 2, Y(k[2])); x.stroke(); x.fillRect(i * st + st * .2, Y(Math.max(k[0], k[3])), st * .6, Math.max(1.5, Math.abs(Y(k[0]) - Y(k[3])))); });
-  x.globalAlpha = 1;
+  const cu = css('--up'), cd = css('--down'), t0 = performance.now(), dur = reduced() ? 0 : 1300;
+  const frame = now => {
+    const prog = dur ? Math.min(1, (now - t0) / dur) : 1, shown = prog * n;
+    x.clearRect(0, 0, w, h);
+    cs.forEach((k, i) => { if(i > shown) return; const g = Math.min(1, shown - i), e = 1 - Math.pow(1 - g, 3), mid = (k[0] + k[3]) / 2;
+      const o = mid + (k[0] - mid) * e, cl = mid + (k[3] - mid) * e, hi2 = mid + (k[1] - mid) * e, lo2 = mid + (k[2] - mid) * e;
+      x.strokeStyle = x.fillStyle = k[3] >= k[0] ? cu : cd; x.globalAlpha = (.35 + .65 * (i / n)) * e; x.beginPath(); x.moveTo(i * st + st / 2, Y(hi2)); x.lineTo(i * st + st / 2, Y(lo2)); x.stroke(); x.fillRect(i * st + st * .2, Y(Math.max(o, cl)), st * .6, Math.max(1.5, Math.abs(Y(o) - Y(cl)))); });
+    x.globalAlpha = 1;
+    if(prog < 1 && c.isConnected) requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
 }
 
 /* ---------- Views: Path ---------- */
@@ -700,7 +757,7 @@ let P = null;
 function player(arg){
   V.nav = false;
   const m = MODS.find(x => x.id === arg.id);
-  P = {m, phase: arg.quiz ? 'quiz' : 'learn', i: 0, score: 0, picked: null, qs: m.quiz.map(q => { const order = shuffle(q.a.map((_, i) => i)); return {q: q.q, a: order.map(i => q.a[i]), c: order.indexOf(0), why: q.why}; })};
+  P = {m, phase: arg.quiz ? 'quiz' : 'learn', i: 0, score: 0, picked: null, anim: true, dir: 1, qs: m.quiz.map(q => { const order = shuffle(q.a.map((_, i) => i)); return {q: q.q, a: order.map(i => q.a[i]), c: order.indexOf(0), why: q.why}; })};
   renderPlayer();
   V.key = (k) => {
     if(k === 'Escape'){ go('path'); return true; }
@@ -721,20 +778,28 @@ function renderPlayer(){
     const q = P.qs[P.i];
     body = `<span class="eyebrow">Quiz · Frage ${P.i + 1} von ${P.qs.length}</span><h2 style="font-size:26px">${q.q}</h2>
      <div class="opts">${q.a.map((a, i) => `<button class="opt ${P.picked != null ? (i === q.c ? 'right' : i === P.picked ? 'wrong' : '') : ''}" data-act="pans" data-v="${i}" ${P.picked != null ? 'disabled' : ''}><kbd>${i + 1}</kbd><span>${a}</span></button>`).join('')}</div>
-     ${P.picked != null ? `<div class="why"><b>${P.picked === q.c ? 'Richtig!' : 'Nicht ganz.'}</b> ${q.why}</div><div class="navrow"><span></span><button class="btn pri big" data-act="pnext">${P.i === P.qs.length - 1 ? 'Ergebnis' : 'Weiter'} <kbd>Enter</kbd></button></div>` : ''}`;
+     ${P.picked != null ? `<div class="why in"><b>${P.picked === q.c ? 'Richtig!' : 'Nicht ganz.'}</b> ${q.why}</div><div class="navrow"><span></span><button class="btn pri big" data-act="pnext">${P.i === P.qs.length - 1 ? 'Ergebnis' : 'Weiter'} <kbd>Enter</kbd></button></div>` : ''}`;
   } else {
     const pass = P.score >= 3, nm = MODS[idx];
-    body = `<div style="display:grid;gap:14px;justify-items:center;text-align:center;padding:20px 0"><span class="eyebrow">Modul ${idx}: ${m.t}</span><div class="score-big num" style="color:var(${pass ? '--up' : '--down'})">${P.score}/5</div>
+    body = `<div style="display:grid;gap:14px;justify-items:center;text-align:center;padding:20px 0"><span class="eyebrow">Modul ${idx}: ${m.t}</span><div class="score-big num" style="color:var(${pass ? '--up' : '--down'});animation:pop .6s var(--spring) both .1s"><span data-count="${P.score}">${P.score}</span>/5</div>
      <h2>${P.score === 5 ? 'Perfekt! Du hast es drauf.' : pass ? 'Bestanden! Modul geschafft.' : 'Fast. Ab 3 richtigen bist du durch.'}</h2>
      <p class="muted">${pass ? (nm ? 'Als Nächstes: ' + nm.t + '.' : 'Du hast den kompletten Lernpfad abgeschlossen!') : 'Lies die Karten nochmal kurz durch, dann klappt es.'}</p>
      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn" data-act="go" data-v="path">Zum Lernpfad</button>${pass && nm ? `<button class="btn pri big" data-act="learn" data-v="${nm.id}">Nächstes Modul <kbd>Enter</kbd></button>` : !pass ? `<button class="btn pri big" data-act="learn" data-v="${m.id}">Nochmal lernen <kbd>Enter</kbd></button>` : `<button class="btn pri big" data-act="go" data-v="sim">Zum Simulator <kbd>Enter</kbd></button>`}</div></div>`;
   }
   main.innerHTML = `<div class="stage"><div class="player card" style="display:grid;gap:20px">
-    <div class="ptop"><button class="btn" data-act="go" data-v="path" aria-label="Schließen" style="min-height:40px;padding:0 12px">✕ <kbd>Esc</kbd></button><div class="bar"><i style="width:${at / total * 100}%"></i></div><span class="num muted">${at}/${total}</span></div>${body}</div></div>`;
+    <div class="ptop"><button class="btn" data-act="go" data-v="path" aria-label="Schließen" style="min-height:40px;padding:0 12px">✕ <kbd>Esc</kbd></button><div class="bar"><i data-bar="player" data-w="${at / total * 100}"></i></div><span class="num muted">${at}/${total}</span></div><div class="pbody" style="display:grid;gap:20px">${body}</div></div></div>`;
+  animBars(main);
+  if(P.anim){
+    stagger(main.querySelectorAll('.pbody > *'), P.dir > 0 ? 'sr' : 'sl', 70);
+    stagger(main.querySelectorAll('.pbody .opts > *, .pbody .lesson > *'), 'st', 70, 220);
+    countUp(main);
+  }
+  P.anim = false;
 }
-function pPrev(){ if(P.i > 0){ P.i--; renderPlayer(); } }
+function pPrev(){ if(P.i > 0){ P.i--; P.anim = true; P.dir = -1; sfx('tick'); renderPlayer(); } }
 function pNext(){
   const m = P.m;
+  if(P.phase !== 'quiz' || P.picked != null){ P.anim = true; P.dir = 1; }
   if(P.phase === 'learn'){
     if(P.i < m.cards.length - 1){ P.i++; sfx('tick'); renderPlayer(); return; }
     const first = !(S.mods[m.id] && S.mods[m.id].learned);
@@ -779,16 +844,18 @@ function timedGame(cfg){
       const q = G.q;
       main.innerHTML = `<div class="stage"><div class="card player" id="gcard" style="display:grid;gap:16px">
         <div class="gtop"><button class="btn" data-act="go" data-v="arcade" style="min-height:40px;padding:0 12px">✕ <kbd>Esc</kbd></button><div class="bar"><i id="tbar" style="width:${G.t / cfg.time * 100}%;transition:width 1s linear"></i></div>
-        <div class="gstat"><b id="tnum">${Math.ceil(G.t)}</b><small>Sek.</small></div><div class="gstat"><b>${G.score}</b><small>Punkte</small></div><div class="gstat"><b class="combo">×${1 + Math.floor(G.combo / 3)}</b><small>Combo ${G.combo}</small></div></div>
-        ${q.html}
+        <div class="gstat"><b id="tnum">${Math.ceil(G.t)}</b><small>Sek.</small></div><div class="gstat"><b class="${G.bump ? 'bump' : ''}">${G.score}</b><small>Punkte</small></div><div class="gstat"><b class="combo">×${1 + Math.floor(G.combo / 3)}</b><small>Combo ${G.combo}</small></div></div>
+        <div class="qwrap">${q.html}</div>
         <div class="opts g2">${q.opts.map((o, i) => `<button class="opt" data-act="gans" data-v="${i}"><kbd>${i + 1}</kbd><span>${o}</span></button>`).join('')}</div>
         <div class="why" id="gfb" style="min-height:48px">${G.fb || 'Tippe die Antwort oder drücke 1 bis 4.'}</div></div></div>`;
     } else {
+      setTimeout(() => { stagger(main.querySelectorAll('.card.player > *'), 'st', 70); countUp(main); });
       const rec = G.score > G.best;
-      main.innerHTML = `<div class="stage"><div class="card player" style="display:grid;gap:14px;text-align:center;justify-items:center;padding:36px 22px"><span class="eyebrow">${cfg.title} · Zeit vorbei</span><div class="score-big num">${G.score}</div><h2>${rec ? 'Neuer Rekord!' : 'Rekord: ' + G.best}</h2><p class="muted">${G.right} von ${G.n} richtig${G.n ? ' (' + Math.round(G.right / G.n * 100) + ' %)' : ''}</p><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn" data-act="go" data-v="arcade">Arcade</button><button class="btn pri big" data-act="gstart">Nochmal <kbd>Enter</kbd></button></div></div></div>`;
+      main.innerHTML = `<div class="stage"><div class="card player" style="display:grid;gap:14px;text-align:center;justify-items:center;padding:36px 22px"><span class="eyebrow">${cfg.title} · Zeit vorbei</span><div class="score-big num" data-count="${G.score}" style="animation:pop .6s var(--spring) both .1s">${G.score}</div><h2>${rec ? 'Neuer Rekord!' : 'Rekord: ' + G.best}</h2><p class="muted">${G.right} von ${G.n} richtig${G.n ? ' (' + Math.round(G.right / G.n * 100) + ' %)' : ''}</p><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn" data-act="go" data-v="arcade">Arcade</button><button class="btn pri big" data-act="gstart">Nochmal <kbd>Enter</kbd></button></div></div></div>`;
     }
   };
-  const next = () => { G.q = cfg.gen(); G.lock = false; draw(); };
+  const next = () => { G.q = cfg.gen(); G.lock = false; draw(); G.bump = false;
+    stagger(main.querySelectorAll('.qwrap'), 'sr', 0); stagger(main.querySelectorAll('.opts.g2 > *'), 'st', 50, 120); };
   const start = () => { G.state = 'play'; G.score = 0; G.combo = 0; G.n = 0; G.right = 0; G.t = cfg.time; G.fb = ''; G.best = S[cfg.bestKey]; next(); stopTimers();
     timers.push(setInterval(() => { G.t -= 1; const b = $('#tbar'), n = $('#tnum'); if(b) b.style.width = Math.max(0, G.t / cfg.time * 100) + '%'; if(n) n.textContent = Math.max(0, Math.ceil(G.t)); if(G.t <= 0) end(); }, 1000)); };
   const end = () => { stopTimers(); G.state = 'over'; if(G.score > S[cfg.bestKey]){ S[cfg.bestKey] = G.score; save(); }
@@ -796,7 +863,7 @@ function timedGame(cfg){
   const answer = i => { if(G.lock || G.state !== 'play') return; G.lock = true; G.n++; const q = G.q, ok = i === q.c;
     const btns = main.querySelectorAll('.opt'); btns.forEach((b, j) => { b.disabled = true; if(j === q.c) b.classList.add('right'); else if(j === i) b.classList.add('wrong'); });
     const card = $('#gcard');
-    if(ok){ G.combo++; G.right++; G.score += 1 + Math.floor((G.combo - 1) / 3); G.fb = '<b style="color:var(--up)">Richtig!</b> ' + q.fb; sfx('ok'); card && card.classList.add('flash-ok'); }
+    if(ok){ G.bump = true; G.combo++; G.right++; G.score += 1 + Math.floor((G.combo - 1) / 3); G.fb = '<b style="color:var(--up)">Richtig!</b> ' + q.fb; sfx('ok'); card && card.classList.add('flash-ok'); }
     else { G.combo = 0; G.t = Math.max(0, G.t - 3); G.fb = '<b style="color:var(--down)">Falsch, −3 Sek.</b> ' + q.fb; sfx('no'); card && card.classList.add('flash-no'); }
     const fb = $('#gfb'); if(fb) fb.innerHTML = G.fb;
     setTimeout(() => { if(gen === GEN && G.state === 'play' && G.t > 0) next(); }, ok ? 650 : 1500); };
@@ -909,7 +976,7 @@ function simBE(){
 }
 function simStep(){
   if(!SIM || SIM.over) return;
-  SIM.cur++;
+  SIM.cur++; SIM.animT = performance.now();
   const k = SIM.day.cs[SIM.cur], p = SIM.pos;
   if(p){
     if(p.side > 0){ if(k.o <= p.stop) simExit(k.o, 'Stop (Gap)'); else if(k.l <= p.stop) simExit(p.stop, p.be ? 'Einstand' : 'Stop'); else if(k.h >= p.target) simExit(p.target, 'Ziel'); }
@@ -998,6 +1065,9 @@ function drawSim(){
   const W = cv.clientWidth, H = cv.clientHeight; if(!W || !H) return;
   cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio;
   const x = cv.getContext('2d'); x.scale(devicePixelRatio, devicePixelRatio);
+  let prog = 1;
+  if(SIM.animT && !reduced()){ prog = Math.min(1, (performance.now() - SIM.animT) / 260); if(prog < 1) requestAnimationFrame(drawSim); }
+  const ease = 1 - Math.pow(1 - prog, 3);
   const d = SIM.day, vis = d.cs.slice(0, SIM.cur + 1), p = SIM.pos;
   const col = {up: css('--up'), down: css('--down'), ink: css('--ink'), muted: css('--muted'), line: css('--line'), acc: css('--accent'), info: css('--info')};
   const axis = 62, volH = H * .17, top = 10, bot = H - volH - 26, pw = W - axis;
@@ -1020,7 +1090,7 @@ function drawSim(){
   const vmax = Math.max(...d.cs.slice(0, Math.max(SIM.cur + 1, 20)).map(k => k.v));
   vis.forEach((k, i) => { x.fillStyle = k.c >= k.o ? col.up : col.down; x.globalAlpha = .35; const vh = k.v / vmax * (volH - 6); x.fillRect(X(i) - bw / 2, H - 22 - vh, bw, vh); }); x.globalAlpha = 1;
   // candles
-  vis.forEach((k, i) => { const c = k.c >= k.o ? col.up : col.down; x.strokeStyle = x.fillStyle = c; x.lineWidth = 1.2; x.beginPath(); x.moveTo(X(i), Y(k.h)); x.lineTo(X(i), Y(k.l)); x.stroke(); x.fillRect(X(i) - bw / 2, Y(Math.max(k.o, k.c)), bw, Math.max(1.2, Math.abs(Y(k.o) - Y(k.c)))); });
+  vis.forEach((k0, i) => { const k = i === vis.length - 1 && prog < 1 ? {o: k0.o, c: k0.o + (k0.c - k0.o) * ease, h: k0.o + (k0.h - k0.o) * ease, l: k0.o + (k0.l - k0.o) * ease} : k0; const c = k0.c >= k0.o ? col.up : col.down; x.strokeStyle = x.fillStyle = c; x.lineWidth = 1.2; x.beginPath(); x.moveTo(X(i), Y(k.h)); x.lineTo(X(i), Y(k.l)); x.stroke(); x.fillRect(X(i) - bw / 2, Y(Math.max(k.o, k.c)), bw, Math.max(1.2, Math.abs(Y(k.o) - Y(k.c)))); });
   // overlays
   [['vwap', col.acc, 2.2], ['ema', col.info, 1.6]].forEach(([key, c, lw]) => { x.strokeStyle = c; x.lineWidth = lw; x.beginPath(); vis.forEach((k, i) => i ? x.lineTo(X(i), Y(k[key])) : x.moveTo(X(i), Y(k[key]))); x.stroke(); });
   // trade markers
@@ -1036,7 +1106,7 @@ function niceStep(raw){ const p = Math.pow(10, Math.floor(Math.log10(raw))), n =
 function profile(){
   const l = levelOf(S.xp);
   main.innerHTML = `<div class="stage"><div style="display:grid;gap:6px"><span class="eyebrow">Profil</span><h1>Level ${l + 1} · ${TITLES[l]}</h1></div>
-   <section class="bigstats"><div><span class="eyebrow">XP</span><b>${de(S.xp)}</b></div><div><span class="eyebrow">Serie · Rekord ${S.bestStreak}</span><b>${S.streak} ${S.streak === 1 ? 'Tag' : 'Tage'}</b></div><div><span class="eyebrow">Module</span><b>${MODS.filter(modDone).length}/8</b></div><div><span class="eyebrow">Sim-Ergebnis</span><b>${S.simTotalR >= 0 ? '+' : ''}${de(S.simTotalR, 1)}R</b></div></section>
+   <section class="bigstats"><div><span class="eyebrow">XP</span><b data-count="${S.xp}">${de(S.xp)}</b></div><div><span class="eyebrow">Serie · Rekord ${S.bestStreak}</span><b>${S.streak} ${S.streak === 1 ? 'Tag' : 'Tage'}</b></div><div><span class="eyebrow">Module</span><b>${MODS.filter(modDone).length}/8</b></div><div><span class="eyebrow">Sim-Ergebnis</span><b>${S.simTotalR >= 0 ? '+' : ''}${de(S.simTotalR, 1)}R</b></div></section>
    <section class="card" style="display:grid;gap:16px"><div class="navrow"><h3>Serie</h3><span class="chip" style="color:var(--info)"><span style="width:16px;height:16px;display:inline-grid">${SNOW}</span>${S.freezes}/2 Serienschutz</span></div>
      <div class="grid2" style="align-items:start"><div style="display:grid;gap:10px"><span class="eyebrow">Letzte 5 Wochen</span>${heatmap()}<div class="legend"><span><i style="background:var(--accent);height:10px;width:10px"></i>Ziel geschafft</span><span><i style="background:var(--info);height:10px;width:10px"></i>Serienschutz</span></div></div>
      <div style="display:grid;gap:10px"><span class="eyebrow">Tagesziel</span><div class="seg" style="grid-template-columns:repeat(4,1fr)">${GOALS.map(([v, n]) => `<button class="${S.goal === v ? 'on' : ''}" data-act="goal" data-v="${v}">${n}<br><span class="num muted" style="font-size:12px">${v} XP</span></button>`).join('')}</div>
